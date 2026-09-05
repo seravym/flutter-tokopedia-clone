@@ -1,17 +1,32 @@
-# flutter_tokopedia_clone
+# Tokopedia UI Clone - Flutter
 
-A new Flutter project.
+Project ini dibuat untuk memenuhi tugas UTS Pemrograman Mobile. 
 
-## Getting Started
+Aplikasi ini merupakan clone UI Tokopedia yang dibuat menggunakan Flutter.
 
-This project is a starting point for a Flutter application.
+## Anggota Kelompok
 
-A few resources to get you started if this is your first Flutter project:
+- Sabrina Clarissa Hendra — 535250112
+- Nama — NIM
+- Nama — NIM
+- Nama — NIM
+- Nama — NIM
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Pembagian Tugas
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- **Home & Splash Screen** — Sabrina
+- **Product Detail** — Nama
+- **Cart & Checkout** — Nama
+- **Search & Wishlist** — Nama
+- **Profile, Auth & Core** — Nama
+
+## User Flow
+
+<img src="docs/tokopedia1.jpg" alt="User Flow" width="500">
+
+## Teknologi
+
+- Flutter
+- Dart
+- Android Studio
+- Github
