@@ -6,19 +6,19 @@ Aplikasi ini merupakan clone UI Tokopedia yang dibuat menggunakan Flutter.
 
 ## Anggota Kelompok
 
-- Sabrina Clarissa Hendra — 535250112
-- Nama — NIM
-- Nama — NIM
-- Nama — NIM
-- Nama — NIM
+- Sabrina Clarissa Hendra - 535250112
+- Nama - NIM
+- Nama - NIM
+- Nama - NIM
+- Nama - NIM
 
 ## Pembagian Tugas
 
-- **Home & Splash Screen** — Sabrina
-- **Product Detail** — Nama
-- **Cart & Checkout** — Nama
-- **Search & Wishlist** — Nama
-- **Profile, Auth & Core** — Nama
+- **Home & Splash/Loading Screen** - Sabrina
+- **Product Detail** - Nama
+- **Cart & Checkout** - Nama
+- **Search & Wishlist** - Nama
+- **Profile, Auth & Core** - Nama
 
 ## User Flow
 
