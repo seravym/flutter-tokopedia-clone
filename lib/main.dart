@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'cart_page.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -11,12 +13,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Tokopedia',
-      debugShowCheckedModeBanner: false, 
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF42B549)),
         useMaterial3: true,
       ),
-      home: const TokopediaLoadingScreen(), 
+      home: const TokopediaLoadingScreen(),
     );
   }
 }
@@ -35,7 +37,7 @@ class TokopediaLoadingScreen extends StatelessWidget {
             fontSize: 48,
             fontWeight: FontWeight.bold,
             color: Colors.white,
-            letterSpacing: -2, 
+            letterSpacing: -2,
           ),
         ),
       ),
