@@ -55,7 +55,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                     SizedBox(height: 15),
                     Text(
-                      'Belanja berbagai kebutuhanmu dengan mudah.',
+                      'membantu belanja berbagai kebutuhan dengan mudah.',
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -80,7 +80,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                     SizedBox(height: 15),
                     Text(
-                      'Temukan berbagai produk dari banyak toko.',
+                      'Ayo temukan berbagai macam produk dari banyak toko.',
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -97,7 +97,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                     SizedBox(height: 30),
                     Text(
-                      'Belanja Aman dan Nyaman',
+                      'Belanja dengan santai dan nyaman',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
