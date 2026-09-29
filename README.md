@@ -7,7 +7,7 @@ Aplikasi ini merupakan clone UI Tokopedia yang dibuat menggunakan Flutter.
 ## Anggota Kelompok
 
 - Sabrina Clarissa Hendra - 535250112
-- Nama - NIM
+- Yohana Pardede - 535250105
 - Nama - NIM
 - Nama - NIM
 - Nama - NIM
