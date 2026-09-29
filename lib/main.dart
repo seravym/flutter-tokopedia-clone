@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'screens/loading_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
-
-
-import 'cart_page.dart';
+import '/login_page.dart';
+import 'screens/home_screen.dart';  
 
 void main() {
   runApp(const MyApp());
@@ -20,29 +20,13 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF42B549)),
         useMaterial3: true,
       ),
-      home: const TokopediaLoadingScreen(),
-    );
-  }
-}
-
-class TokopediaLoadingScreen extends StatelessWidget {
-  const TokopediaLoadingScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Color(0xFF42B549),
-      body: Center(
-        child: Text(
-          'tokopedia',
-          style: TextStyle(
-            fontSize: 48,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: -2,
-          ),
-        ),
-      ),
+      initialRoute: '/',
+      routes: {
+        '/':          (context) => const LoadingScreen(),
+        '/onboarding':(context) => const OnboardingScreen(),
+        '/login':     (context) => const LoginPage(),
+        '/profile':   (context) => const HomeScreen(), 
+      },
     );
   }
 }
