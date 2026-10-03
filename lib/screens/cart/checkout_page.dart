@@ -161,7 +161,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       const SizedBox(height: 4),
                       Text(
                         hasAddress
-                            ? user!.address
+                            ? user.address
                             : 'Belum ada alamat. Tambahkan dulu ya.',
                         style: T.s(13,
                             c: hasAddress ? AppColors.ink : AppColors.peach,
