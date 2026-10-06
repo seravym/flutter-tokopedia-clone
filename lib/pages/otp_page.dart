@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class OtpPage extends StatelessWidget {
   const OtpPage({super.key});
@@ -19,30 +20,21 @@ class OtpPage extends StatelessWidget {
           children: [
             const SizedBox(height: 30),
 
-            const Icon(
-              Icons.lock_outline,
-              size: 70,
-              color: Color(0xFF42B549),
-            ),
+            const Icon(Icons.lock_outline, size: 70, color: Color(0xFF42B549)),
 
             const SizedBox(height: 20),
 
             const Text(
               'Verifikasi Nomor',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
 
             const Text(
-              'Masukkan kode OTP yang dikirim ke nomor kamu',
+              'Masukkan kode OTP ',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey,
-              ),
+              style: TextStyle(color: Colors.grey),
             ),
 
             const SizedBox(height: 30),
@@ -66,15 +58,10 @@ class OtpPage extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   if (otpController.text == '123456') {
-                    Navigator.pushReplacementNamed(
-                      context,
-                      '/profile',
-                    );
+                    context.go('/profile');
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Kode OTP salah'),
-                      ),
+                      const SnackBar(content: Text('Kode OTP salah')),
                     );
                   }
                 },
@@ -91,9 +78,7 @@ class OtpPage extends StatelessWidget {
             TextButton(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Kode OTP baru telah dikirim'),
-                  ),
+                  const SnackBar(content: Text('Kode OTP baru telah dikirim')),
                 );
               },
               child: const Text('Kirim ulang kode'),
@@ -103,9 +88,7 @@ class OtpPage extends StatelessWidget {
 
             const Text(
               'Kode OTP: 123456',
-              style: TextStyle(
-                color: Colors.grey,
-              ),
+              style: TextStyle(color: Colors.grey),
             ),
           ],
         ),
@@ -113,4 +96,3 @@ class OtpPage extends StatelessWidget {
     );
   }
 }
-
