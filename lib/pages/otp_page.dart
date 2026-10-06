@@ -40,7 +40,9 @@ class OtpPage extends StatelessWidget {
             const Text(
               'Masukkan kode OTP yang dikirim ke nomor kamu',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(
+                color: Colors.grey,
+              ),
             ),
 
             const SizedBox(height: 30),
@@ -63,7 +65,18 @@ class OtpPage extends StatelessWidget {
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pushReplacementNamed(context, '/profile');
+                  if (otpController.text == '123456') {
+                    Navigator.pushReplacementNamed(
+                      context,
+                      '/profile',
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Kode OTP salah'),
+                      ),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF42B549),
@@ -76,8 +89,23 @@ class OtpPage extends StatelessWidget {
             const SizedBox(height: 10),
 
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Kode OTP baru telah dikirim'),
+                  ),
+                );
+              },
               child: const Text('Kirim ulang kode'),
+            ),
+
+            const SizedBox(height: 10),
+
+            const Text(
+              'Kode OTP: 123456',
+              style: TextStyle(
+                color: Colors.grey,
+              ),
             ),
           ],
         ),
@@ -85,3 +113,4 @@ class OtpPage extends StatelessWidget {
     );
   }
 }
+
