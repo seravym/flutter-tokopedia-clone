@@ -28,7 +28,7 @@ class _LoadingPageState extends State<LoadingPage> {
     Future.delayed(const Duration(seconds: 3), () {
       _blinkTimer?.cancel();
       if (mounted) {
-        context.go('/home');
+        context.go('/onboarding');
       }
     });
   }

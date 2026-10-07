@@ -34,11 +34,8 @@ class _OtpPageState extends State<OtpPage> {
       otpController.clear();
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('OTP baru telah dikirim'),
-      ),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('OTP baru telah dikirim')));
   }
 
   @override
@@ -46,7 +43,7 @@ class _OtpPageState extends State<OtpPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Verifikasi OTP'),
-        backgroundColor: const Color(0xFF42B549),
+        backgroundColor: const Color.fromARGB(255, 14, 19, 15),
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -58,17 +55,14 @@ class _OtpPageState extends State<OtpPage> {
             const Icon(
               Icons.lock_outline,
               size: 70,
-              color: Color(0xFF42B549),
+              color: Color.fromARGB(255, 34, 43, 34),
             ),
 
             const SizedBox(height: 20),
 
             const Text(
-              'Verifikasi Nomor',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              'Verifikasi akun',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
@@ -76,9 +70,7 @@ class _OtpPageState extends State<OtpPage> {
             const Text(
               'Masukkan kode OTP',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey,
-              ),
+              style: TextStyle(color: Colors.grey),
             ),
 
             const SizedBox(height: 30),
@@ -102,12 +94,10 @@ class _OtpPageState extends State<OtpPage> {
               child: ElevatedButton(
                 onPressed: () {
                   if (otpController.text == otp) {
-                    context.go('/profile');
+                    context.go('/home');
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Kode OTP salah'),
-                      ),
+                      const SnackBar(content: Text('Kode OTP salah')),
                     );
                   }
                 },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -18,7 +19,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         curve: Curves.ease,
       );
     } else {
-      Navigator.pushNamed(context, '/login');
+      context.go('/login');
     }
   }
 
@@ -43,7 +44,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Icon(
                       Icons.shopping_bag,
                       size: 100,
-                      color: Colors.green,
+                      color: const Color.fromARGB(255, 0, 0, 0),
                     ),
                     SizedBox(height: 30),
                     Text(
@@ -68,7 +69,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Icon(
                       Icons.store,
                       size: 100,
-                      color: Colors.green,
+                      color: const Color.fromARGB(255, 0, 0, 0)
                     ),
                     SizedBox(height: 30),
                     Text(
@@ -93,7 +94,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Icon(
                       Icons.local_shipping,
                       size: 100,
-                      color: Colors.green,
+                      color: const Color.fromARGB(255, 0, 0, 0),
                     ),
                     SizedBox(height: 30),
                     Text(
@@ -135,7 +136,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: ElevatedButton(
                 onPressed: nextPage,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: const Color.fromARGB(255, 0, 0, 0),
                 ),
                 child: Text(
                   halaman == 2 ? 'Mulai' : 'Lanjut',
@@ -160,7 +161,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       height: 8,
       decoration: BoxDecoration(
         color: halaman == index
-            ? Colors.green
+            ? const Color.fromARGB(255, 0, 0, 0)
             : Colors.grey,
         borderRadius: BorderRadius.circular(10),
       ),
