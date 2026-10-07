@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../services/auth_store.dart';
 import 'edit_profile_screen.dart';
@@ -31,7 +32,11 @@ class AccountScreen extends StatelessWidget {
                 const CircleAvatar(
                   radius: 32,
                   backgroundColor: Color(0xFFE8F5E9),
-                  child: Icon(Icons.person, size: 36, color: Colors.green),
+                  child: Icon(
+                    Icons.person,
+                    size: 36,
+                    color: Color.fromARGB(255, 0, 0, 0),
+                  ),
                 ),
                 const SizedBox(width: 15),
                 Expanded(
@@ -73,10 +78,7 @@ class AccountScreen extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.person_outline),
                   title: const Text('Edit Profil'),
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -92,10 +94,7 @@ class AccountScreen extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.location_on_outlined),
                   title: const Text('Alamat'),
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -116,7 +115,7 @@ class AccountScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const OrderHistoryPage(),
+                        builder: (context) => const OrderHistoryPage(),
                       ),
                     );
                   },
@@ -127,10 +126,7 @@ class AccountScreen extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.settings_outlined),
                   title: const Text('Pengaturan'),
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -154,14 +150,14 @@ class AccountScreen extends StatelessWidget {
                 await AuthStore.instance.logout();
 
                 if (context.mounted) {
-                  Navigator.pop(context);
+                  context.go('/login');
                 }
               },
               icon: const Icon(Icons.logout),
               label: const Text('Keluar'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red,
-                side: const BorderSide(color: Colors.red),
+                foregroundColor: const Color.fromARGB(255, 173, 47, 47),
+                side: const BorderSide(color: Color.fromARGB(255, 0, 0, 0)),
               ),
             ),
           ),
