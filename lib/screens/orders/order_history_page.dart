@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/order_store.dart';
 import '../../core/theme.dart';
+import 'tracking_order_page.dart';
 
 class OrderHistoryPage extends StatefulWidget {
   const OrderHistoryPage({super.key});
@@ -115,7 +116,15 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      TrackingOrderPage(order: order),
+                                ),
+                              );
+                            },
                             child: const Text('Lacak Pesanan'),
                           ),
                         ),
