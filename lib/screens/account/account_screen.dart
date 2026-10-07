@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../services/auth_store.dart';
+import 'edit_profile_screen.dart';
+import 'address_screen.dart';
+import 'setting_screen.dart';
 import '../orders/order_history_page.dart';
 
 class AccountScreen extends StatelessWidget {
@@ -16,7 +18,6 @@ class AccountScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Profile
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -32,9 +33,7 @@ class AccountScreen extends StatelessWidget {
                   backgroundColor: Color(0xFFE8F5E9),
                   child: Icon(Icons.person, size: 36, color: Colors.green),
                 ),
-
                 const SizedBox(width: 15),
-
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,9 +45,7 @@ class AccountScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-
                       const SizedBox(height: 5),
-
                       Text(
                         user?.email ?? 'user@email.com',
                         style: TextStyle(
@@ -59,19 +56,12 @@ class AccountScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Colors.grey,
-                ),
               ],
             ),
           ),
 
           const SizedBox(height: 20),
 
-          // Menu
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -83,6 +73,18 @@ class AccountScreen extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.person_outline),
                   title: const Text('Edit Profil'),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const EditProfileScreen(),
+                      ),
+                    );
+                  },
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () {},
                 ),
@@ -92,6 +94,18 @@ class AccountScreen extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.location_on_outlined),
                   title: const Text('Alamat'),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddressScreen(),
+                      ),
+                    );
+                  },
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () {},
                 ),
@@ -117,6 +131,18 @@ class AccountScreen extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.settings_outlined),
                   title: const Text('Pengaturan'),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SettingScreen(),
+                      ),
+                    );
+                  },
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () {},
                 ),
@@ -126,7 +152,6 @@ class AccountScreen extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // Logout
           SizedBox(
             width: double.infinity,
             height: 50,
@@ -135,7 +160,7 @@ class AccountScreen extends StatelessWidget {
                 await AuthStore.instance.logout();
 
                 if (context.mounted) {
-                  context.go('/login');
+                  Navigator.pop(context);
                 }
               },
               icon: const Icon(Icons.logout),
@@ -143,9 +168,6 @@ class AccountScreen extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.red,
                 side: const BorderSide(color: Colors.red),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
               ),
             ),
           ),
