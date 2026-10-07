@@ -10,6 +10,8 @@ class TrackingOrderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentStatus = _getCurrentStatus();
+
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
@@ -75,7 +77,7 @@ class TrackingOrderPage extends StatelessWidget {
               icon: Icons.receipt_long,
               title: 'Pesanan dibuat',
               subtitle: 'Pesanan berhasil dibuat',
-              active: true,
+              active: currentStatus >= 0,
               isLast: false,
             ),
 
@@ -83,7 +85,7 @@ class TrackingOrderPage extends StatelessWidget {
               icon: Icons.inventory_2_outlined,
               title: 'Pesanan diproses',
               subtitle: 'Pesanan sedang diproses oleh penjual',
-              active: true,
+              active: currentStatus >= 1,
               isLast: false,
             ),
 
@@ -91,15 +93,15 @@ class TrackingOrderPage extends StatelessWidget {
               icon: Icons.inventory_outlined,
               title: 'Pesanan dikemas',
               subtitle: 'Pesanan sedang dikemas',
-              active: true,
+              active: currentStatus >= 2,
               isLast: false,
             ),
 
             _buildStatus(
               icon: Icons.local_shipping_outlined,
               title: 'Pesanan dikirim',
-              subtitle: 'Menunggu pesanan dikirim',
-              active: false,
+              subtitle: 'Pesanan sedang dalam perjalanan',
+              active: currentStatus >= 3,
               isLast: false,
             ),
 
@@ -107,13 +109,29 @@ class TrackingOrderPage extends StatelessWidget {
               icon: Icons.check_circle_outline,
               title: 'Pesanan selesai',
               subtitle: 'Pesanan telah diterima',
-              active: false,
+              active: currentStatus >= 4,
               isLast: true,
             ),
           ],
         ),
       ),
     );
+  }
+
+  int _getCurrentStatus() {
+    switch (order.status.toLowerCase()) {
+      case 'diproses':
+        return 1;
+
+      case 'dikirim':
+        return 3;
+
+      case 'selesai':
+        return 4;
+
+      default:
+        return 1;
+    }
   }
 
   Widget _buildStatus({
