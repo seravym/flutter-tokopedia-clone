@@ -12,7 +12,8 @@ import 'checkout_page.dart';
 
 class CartPage extends StatelessWidget {
   final bool showBack;
-  const CartPage({super.key, this.showBack = false});
+  final bool embedded;
+  const CartPage({super.key, this.showBack = false, this.embedded = false});
 
   @override
   Widget build(BuildContext context) {
@@ -32,12 +33,10 @@ class CartPage extends StatelessWidget {
                       ? EmptyState(
                           icon: Icons.shopping_bag_outlined,
                           title: 'Keranjangmu masih kosong',
-                          subtitle:
-                              'Yuk isi dengan barang-barang lucu yang kamu suka ✨',
+                          subtitle: 'Yuk isi dengan barang-barang lucu yang kamu suka ✨',
                           actionLabel: 'Mulai belanja',
                           onAction: () {
-                            Navigator.of(context)
-                                .popUntil((r) => r.isFirst);
+                            Navigator.of(context).popUntil((r) => r.isFirst);
                             AppNav.tab.value = 0;
                           },
                         )
@@ -82,8 +81,10 @@ class CartPage extends StatelessWidget {
                 color: AppColors.mint,
                 borderRadius: BorderRadius.circular(100),
               ),
-              child: Text('${cart.totalQty}',
-                  style: T.s(13, w: FontWeight.w800, c: AppColors.green)),
+              child: Text(
+                '${cart.totalQty}',
+                style: T.s(13, w: FontWeight.w800, c: AppColors.green),
+              ),
             ),
         ],
       ),
@@ -110,8 +111,10 @@ class CartPage extends StatelessWidget {
               if (cart.selectedItems.isNotEmpty)
                 TextButton(
                   onPressed: () => _confirmDeleteSelected(context, cart),
-                  child: Text('Hapus (${cart.selectedItems.length})',
-                      style: T.s(13, w: FontWeight.w700, c: AppColors.peach)),
+                  child: Text(
+                    'Hapus (${cart.selectedItems.length})',
+                    style: T.s(13, w: FontWeight.w700, c: AppColors.peach),
+                  ),
                 ),
             ],
           ),
@@ -160,16 +163,22 @@ class CartPage extends StatelessWidget {
           color: AppColors.peach,
           borderRadius: BorderRadius.circular(22),
         ),
-        child: const Icon(Icons.delete_outline_rounded,
-            color: Colors.white, size: 26),
+        child: const Icon(
+          Icons.delete_outline_rounded,
+          color: Colors.white,
+          size: 26,
+        ),
       ),
       onDismissed: (_) {
         final index = cart.items.indexOf(item);
         cart.remove(item);
-        toast(context, 'Barang dihapus dari keranjang',
-            icon: Icons.delete_outline_rounded,
-            actionLabel: 'Batalkan',
-            onAction: () => cart.restore(item, index < 0 ? 0 : index));
+        toast(
+          context,
+          'Barang dihapus dari keranjang',
+          icon: Icons.delete_outline_rounded,
+          actionLabel: 'Batalkan',
+          onAction: () => cart.restore(item, index < 0 ? 0 : index),
+        );
       },
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -204,18 +213,26 @@ class CartPage extends StatelessWidget {
                 children: [
                   Text(item.brand, style: T.small),
                   const SizedBox(height: 2),
-                  Text(item.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: T.s(13, w: FontWeight.w700, h: 1.3)),
+                  Text(
+                    item.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: T.s(13, w: FontWeight.w700, h: 1.3),
+                  ),
                   const SizedBox(height: 6),
-                  Text(rupiahInt(item.priceIdr),
-                      style: T.s(15, w: FontWeight.w800, ls: -0.3)),
+                  Text(
+                    rupiahInt(item.priceIdr),
+                    style: T.s(15, w: FontWeight.w800, ls: -0.3),
+                  ),
                   if (hasDiscount)
-                    Text(rupiahInt(item.originalIdr),
-                        style: T.s(11,
-                            c: AppColors.sub,
-                            deco: TextDecoration.lineThrough)),
+                    Text(
+                      rupiahInt(item.originalIdr),
+                      style: T.s(
+                        11,
+                        c: AppColors.sub,
+                        deco: TextDecoration.lineThrough,
+                      ),
+                    ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -239,15 +256,21 @@ class CartPage extends StatelessWidget {
                         onTap: () {
                           final index = cart.items.indexOf(item);
                           cart.remove(item);
-                          toast(context, 'Barang dihapus dari keranjang',
-                              icon: Icons.delete_outline_rounded,
-                              actionLabel: 'Batalkan',
-                              onAction: () => cart.restore(item, index));
+                          toast(
+                            context,
+                            'Barang dihapus dari keranjang',
+                            icon: Icons.delete_outline_rounded,
+                            actionLabel: 'Batalkan',
+                            onAction: () => cart.restore(item, index),
+                          );
                         },
                         child: const Padding(
                           padding: EdgeInsets.all(6),
-                          child: Icon(Icons.delete_outline_rounded,
-                              color: AppColors.sub, size: 22),
+                          child: Icon(
+                            Icons.delete_outline_rounded,
+                            color: AppColors.sub,
+                            size: 22,
+                          ),
                         ),
                       ),
                     ],
@@ -255,8 +278,10 @@ class CartPage extends StatelessWidget {
                   if (item.stock <= 10)
                     Padding(
                       padding: const EdgeInsets.only(top: 6),
-                      child: Text('Stok tersisa ${item.stock}',
-                          style: T.s(11, w: FontWeight.w700, c: AppColors.peach)),
+                      child: Text(
+                        'Stok tersisa ${item.stock}',
+                        style: T.s(11, w: FontWeight.w700, c: AppColors.peach),
+                      ),
                     ),
                 ],
               ),
@@ -277,17 +302,22 @@ class CartPage extends StatelessWidget {
     }
     if (!context.mounted) return;
     if (p == null) {
-      toast(context, 'Gagal memuat produk. Cek koneksi internetmu.',
-          icon: Icons.wifi_off_rounded);
+      toast(
+        context,
+        'Gagal memuat produk. Cek koneksi internetmu.',
+        icon: Icons.wifi_off_rounded,
+      );
       return;
     }
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => ProductDetailPage(product: p!)),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => ProductDetailPage(product: p!)));
   }
 
   Future<void> _confirmDeleteSelected(
-      BuildContext context, CartStore cart) async {
+    BuildContext context,
+    CartStore cart,
+  ) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -296,17 +326,23 @@ class CartPage extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text('Hapus barang?', style: T.h3),
         content: Text(
-            '${cart.selectedItems.length} barang terpilih akan dihapus dari keranjang.',
-            style: T.body),
+          '${cart.selectedItems.length} barang terpilih akan dihapus dari keranjang.',
+          style: T.body,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Batal', style: T.s(14, w: FontWeight.w700, c: AppColors.sub)),
+            child: Text(
+              'Batal',
+              style: T.s(14, w: FontWeight.w700, c: AppColors.sub),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Hapus',
-                style: T.s(14, w: FontWeight.w800, c: AppColors.peach)),
+            child: Text(
+              'Hapus',
+              style: T.s(14, w: FontWeight.w800, c: AppColors.peach),
+            ),
           ),
         ],
       ),
@@ -315,7 +351,7 @@ class CartPage extends StatelessWidget {
   }
 
   Widget _summary(BuildContext context, CartStore cart) {
-    final bottom = MediaQuery.of(context).padding.bottom;
+    final bottom = embedded ? 0.0 : MediaQuery.of(context).padding.bottom;
     final enabled = cart.selectedQty > 0;
     return Container(
       padding: EdgeInsets.fromLTRB(20, 14, 20, 14 + bottom),
@@ -339,11 +375,15 @@ class CartPage extends StatelessWidget {
               children: [
                 Text('Total harga', style: T.small),
                 const SizedBox(height: 2),
-                Text(rupiahInt(cart.subtotal),
-                    style: T.s(20, w: FontWeight.w800, ls: -0.6)),
+                Text(
+                  rupiahInt(cart.subtotal),
+                  style: T.s(20, w: FontWeight.w800, ls: -0.6),
+                ),
                 if (cart.savings > 0)
-                  Text('Hemat ${rupiahInt(cart.savings)}',
-                      style: T.s(12, w: FontWeight.w700, c: AppColors.green)),
+                  Text(
+                    'Hemat ${rupiahInt(cart.savings)}',
+                    style: T.s(12, w: FontWeight.w700, c: AppColors.green),
+                  ),
               ],
             ),
           ),
@@ -353,9 +393,8 @@ class CartPage extends StatelessWidget {
               label: 'Checkout (${cart.selectedQty})',
               onPressed: enabled
                   ? () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                            builder: (_) => const CheckoutPage()),
-                      )
+                      MaterialPageRoute(builder: (_) => const CheckoutPage()),
+                    )
                   : null,
             ),
           ),

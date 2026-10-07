@@ -6,14 +6,19 @@ import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../../core/app_colors.dart';
+import '../../core/format.dart';
 import '../../models/product.dart';
 import '../../services/product_repository.dart';
 import '../../services/saved_folders_repository.dart';
+import '../../services/budget_repository.dart';
+import '../../services/app_nav.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/save_to_folder_sheet.dart';
 import '../saved/saved_screen.dart';
 import '../account/account_screen.dart';
-import '../orders/order_history_page.dart';
+import '../budget/budget_screen.dart';
+import '../search/search_screen.dart';
+import '../cart/cart_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,7 +29,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  bool _isSearchExpanded = false;
+  bool _showSearch = false;
+  DateTime? _lastRefreshTime;
+
+  final ScrollController _promoScrollController = ScrollController();
+  int? _pendingPromoScroll;
 
   late Future<List<Product>> _productsFuture;
 
@@ -34,60 +43,46 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Map<String, dynamic>> banners = [
     {
-      'title': 'Koleksi Terbaru',
-      'subtitle': 'Diskon hingga 70% untuk item pilihan',
+      'title': 'Flash Sale',
+      'subtitle': 'Diskon terbesar hari ini',
       'color': AppColors.accent,
-      'icon': Icons.auto_awesome,
+      'icon': Icons.bolt,
+      'targetSection': 0,
     },
     {
-      'title': 'Gratis Ongkir',
-      'subtitle': 'Min. belanja Rp50.000 ke seluruh Indonesia',
+      'title': 'Diskon Spesial',
+      'subtitle': 'Penawaran pilihan untukmu',
       'color': const Color(0xFF2C2C3E),
-      'icon': Icons.local_shipping_outlined,
+      'icon': Icons.local_offer_outlined,
+      'targetSection': 1,
     },
     {
-      'title': 'Cashback Eksklusif',
-      'subtitle': 'Hingga 20% dengan metode pembayaran digital',
+      'title': 'Hemat',
+      'subtitle': 'Tetap hemat tetap gaya',
       'color': const Color(0xFF3E3E52),
-      'icon': Icons.account_balance_wallet_outlined,
+      'icon': Icons.savings_outlined,
+      'targetSection': 2,
     },
   ];
 
   final List<Map<String, dynamic>> categories = [
-    {'name': 'Elektronik', 'icon': Icons.devices_other},
-    {'name': 'Fashion', 'icon': Icons.checkroom},
-    {'name': 'Makanan', 'icon': Icons.restaurant},
-    {'name': 'Kesehatan', 'icon': Icons.medical_services_outlined},
-    {'name': 'Olahraga', 'icon': Icons.sports_tennis},
-    {'name': 'Otomotif', 'icon': Icons.directions_car_outlined},
+    {'name': 'Smartphone', 'slug': 'smartphones', 'icon': Icons.smartphone},
+    {'name': 'Laptop', 'slug': 'laptops', 'icon': Icons.laptop_mac},
+    {'name': 'Kecantikan', 'slug': 'beauty', 'icon': Icons.spa_outlined},
+    {'name': 'Fashion', 'slug': 'womens-dresses', 'icon': Icons.checkroom},
+    {'name': 'Pria', 'slug': 'mens-shirts', 'icon': Icons.man_outlined},
+    {
+      'name': 'Olahraga',
+      'slug': 'sports-accessories',
+      'icon': Icons.sports_tennis,
+    },
   ];
 
-  final List<Map<String, dynamic>> promos = [
-    {
-      'title': 'Flash Sale',
-      'desc': 'Diskon hingga 90% — berakhir tengah malam',
-      'tag': 'TERBATAS',
-      'icon': Icons.bolt,
-    },
-    {
-      'title': 'Voucher Belanja',
-      'desc': 'Klaim kupon eksklusif senilai Rp50.000',
-      'tag': 'VOUCHER',
-      'icon': Icons.confirmation_number_outlined,
-    },
-    {
-      'title': 'Cashback Spesial',
-      'desc': 'Untuk pengguna baru dan transaksi pertama',
-      'tag': 'NEW USER',
-      'icon': Icons.card_giftcard,
-    },
-    {
-      'title': 'Bundling Hemat',
-      'desc': 'Beli 2 gratis 1 untuk kategori terpilih',
-      'tag': 'BUNDLING',
-      'icon': Icons.inventory_2_outlined,
-    },
-  ];
+  final Map<int, GlobalKey> _sectionKeys = {
+    0: GlobalKey(),
+    1: GlobalKey(),
+    2: GlobalKey(),
+  };
 
   @override
   void initState() {
@@ -110,49 +105,84 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _autoScrollTimer?.cancel();
     _bannerController.dispose();
+    _promoScrollController.dispose();
     super.dispose();
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  void _openSearch({String? category, String? query, String? tag}) {
+    AppNav.searchIntent.value = SearchIntent(
+      category: category,
+      query: query,
+      tag: tag,
+    );
+    setState(() => _showSearch = true);
+  }
+
+  void _closeSearch() {
+    setState(() => _showSearch = false);
+  }
+
+  void _openPromoSection(int sectionIndex) {
+    setState(() {
+      _currentIndex = 1;
+      _showSearch = false;
+      _pendingPromoScroll = sectionIndex;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToPromoSection();
+    });
+  }
+
+  void _scrollToPromoSection() {
+    final sectionIndex = _pendingPromoScroll;
+    if (sectionIndex == null) return;
+
+    final key = _sectionKeys[sectionIndex];
+    if (key == null || key.currentContext == null) return;
+
+    Scrollable.ensureVisible(
+      key.currentContext!,
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOutCubic,
+      alignment: 0.05,
+    );
+
+    _pendingPromoScroll = null;
+  }
+
+  PreferredSizeWidget? _buildAppBar() {
+    if (_showSearch) return null;
+    if (_currentIndex == 2) return null;
+    if (_currentIndex == 4) return null;
+
     if (_currentIndex == 0) {
       return AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
+        titleSpacing: 16,
         title: Row(
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              width: _isSearchExpanded
-                  ? MediaQuery.of(context).size.width * 0.60
-                  : 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.bg,
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
+            Expanded(
+              child: Container(
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.bg,
                   borderRadius: BorderRadius.circular(22),
-                  onTap: () {
-                    setState(() => _isSearchExpanded = !_isSearchExpanded);
-                  },
-                  onHover: (isHovering) {
-                    setState(() => _isSearchExpanded = isHovering);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.search,
-                          color: AppColors.muted,
-                          size: 20,
-                        ),
-                        if (_isSearchExpanded) ...[
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(22),
+                    onTap: () => _openSearch(),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.search,
+                              color: AppColors.muted, size: 20),
                           const SizedBox(width: 10),
                           const Expanded(
                             child: Text(
@@ -164,25 +194,44 @@ class _HomeScreenState extends State<HomeScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const Icon(
-                            Icons.camera_alt_outlined,
-                            color: AppColors.muted,
-                            size: 18,
+                          GestureDetector(
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      'Fitur pencarian gambar segera hadir'),
+                                  backgroundColor: AppColors.accent,
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            child: const Icon(Icons.camera_alt_outlined,
+                                color: AppColors.muted, size: 18),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 6),
                           Container(
-                            height: 18,
-                            width: 1,
-                            color: AppColors.border,
-                          ),
-                          const SizedBox(width: 8),
-                          const Icon(
-                            Icons.qr_code_scanner,
-                            color: AppColors.muted,
-                            size: 18,
+                              height: 18,
+                              width: 1,
+                              color: AppColors.border),
+                          const SizedBox(width: 6),
+                          GestureDetector(
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      'Fitur scan barcode segera hadir'),
+                                  backgroundColor: AppColors.accent,
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            child: const Icon(Icons.qr_code_scanner,
+                                color: AppColors.muted, size: 18),
                           ),
                         ],
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -193,11 +242,48 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(
-              Icons.notifications_none,
-              color: AppColors.ink,
-              size: 22,
-            ),
+            icon: const Icon(Icons.notifications_none,
+                color: AppColors.ink, size: 22),
+          ),
+          AnimatedBuilder(
+            animation: BudgetRepository.instance,
+            builder: (context, _) {
+              final repo = BudgetRepository.instance;
+              final isOver = repo.isOverBudget;
+              final hasBudget = repo.hasBudget;
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const BudgetScreen()),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.account_balance_wallet_outlined,
+                      color: AppColors.ink,
+                      size: 22,
+                    ),
+                  ),
+                  if (hasBudget && isOver)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppColors.danger,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
           AnimatedBuilder(
             animation: SavedFoldersRepository.instance,
@@ -210,14 +296,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const SavedScreen()),
+                        MaterialPageRoute(
+                            builder: (_) => const SavedScreen()),
                       );
                     },
-                    icon: const Icon(
-                      Icons.bookmark_border,
-                      color: AppColors.ink,
-                      size: 22,
-                    ),
+                    icon: const Icon(Icons.bookmark_border,
+                        color: AppColors.ink, size: 22),
                   ),
                   if (count > 0)
                     Positioned(
@@ -225,9 +309,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       right: 6,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 1,
-                        ),
+                            horizontal: 5, vertical: 1),
                         decoration: BoxDecoration(
                           color: AppColors.accent2,
                           borderRadius: BorderRadius.circular(10),
@@ -250,11 +332,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             onPressed: () => setState(() => _currentIndex = 2),
-            icon: const Icon(
-              Icons.shopping_bag_outlined,
-              color: AppColors.ink,
-              size: 22,
-            ),
+            icon: const Icon(Icons.shopping_bag_outlined,
+                color: AppColors.ink, size: 22),
           ),
         ],
       );
@@ -265,14 +344,8 @@ class _HomeScreenState extends State<HomeScreen> {
       case 1:
         title = 'Promo';
         break;
-      case 2:
-        title = 'Keranjang';
-        break;
       case 3:
         title = 'Pengaturan';
-        break;
-      case 4:
-        title = 'Akun';
         break;
       default:
         title = 'Tokopedia';
@@ -292,26 +365,18 @@ class _HomeScreenState extends State<HomeScreen> {
           letterSpacing: -0.3,
         ),
       ),
-      actions: _currentIndex == 2
-          ? []
-          : [
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.notifications_none,
-                  color: AppColors.ink,
-                  size: 22,
-                ),
-              ),
-              IconButton(
-                onPressed: () => setState(() => _currentIndex = 2),
-                icon: const Icon(
-                  Icons.shopping_bag_outlined,
-                  color: AppColors.ink,
-                  size: 22,
-                ),
-              ),
-            ],
+      actions: [
+        IconButton(
+          onPressed: () {},
+          icon: const Icon(Icons.notifications_none,
+              color: AppColors.ink, size: 22),
+        ),
+        IconButton(
+          onPressed: () => setState(() => _currentIndex = 2),
+          icon: const Icon(Icons.shopping_bag_outlined,
+              color: AppColors.ink, size: 22),
+        ),
+      ],
     );
   }
 
@@ -322,24 +387,25 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: _buildAppBar(),
       body: _buildBody(),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(top: BorderSide(color: AppColors.border, width: 1)),
-        ),
+        color: AppColors.accent,
         child: SafeArea(
           top: false,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: GNav(
-              backgroundColor: Colors.transparent,
-              color: AppColors.muted,
-              activeColor: AppColors.ink,
-              tabBackgroundColor: AppColors.bg,
-              rippleColor: AppColors.bg,
-              hoverColor: AppColors.bg,
+              backgroundColor: AppColors.accent,
+              color: Colors.grey,
+              activeColor: Colors.white,
+              tabBackgroundColor: Colors.white.withValues(alpha: 0.12),
+              rippleColor: Colors.white.withValues(alpha: 0.1),
+              hoverColor: Colors.white.withValues(alpha: 0.08),
               gap: 6,
               selectedIndex: _currentIndex,
-              onTabChange: (index) => setState(() => _currentIndex = index),
+              onTabChange: (index) => setState(() {
+                _currentIndex = index;
+                _showSearch = false;
+                _pendingPromoScroll = null;
+              }),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               duration: const Duration(milliseconds: 300),
               tabBorderRadius: 14,
@@ -359,13 +425,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBody() {
+    if (_showSearch) {
+      return SearchScreen(onClose: _closeSearch);
+    }
+
     switch (_currentIndex) {
       case 0:
         return _buildHomeContent();
       case 1:
         return _buildPromoContent();
       case 2:
-        return const Center(child: Text('Halaman Keranjang'));
+        return const CartPage(embedded: true);
       case 3:
         return const Center(child: Text('Halaman Pengaturan'));
       case 4:
@@ -376,187 +446,479 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPromoContent() {
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppColors.accent,
-                borderRadius: BorderRadius.circular(20),
+    return FutureBuilder<List<Product>>(
+      future: _productsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.accent,
+              strokeWidth: 2,
+            ),
+          );
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Gagal memuat: ${snapshot.error}'));
+        }
+
+        final allProducts = snapshot.data ?? [];
+        final sorted = List<Product>.from(allProducts)
+          ..sort((a, b) =>
+              b.discountPercentage.compareTo(a.discountPercentage));
+
+        final discounted =
+            sorted.where((p) => p.discountPercentage > 0).toList();
+
+        final total = discounted.length;
+        final chunk = (total / 3).ceil();
+
+        final flashSale = discounted.take(chunk).toList();
+        final diskonSpesial = discounted.skip(chunk).take(chunk).toList();
+        final hemat = discounted.skip(chunk * 2).take(chunk).toList();
+
+        return SingleChildScrollView(
+          controller: _promoScrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent2.withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          'SPESIAL',
+                          style: TextStyle(
+                            color: AppColors.accent2,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      const Text(
+                        'Promo Pilihan\nMinggu Ini',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                          height: 1.25,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Kurasi penawaran terbaik untukmu',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.accent2.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      'SPESIAL',
-                      style: TextStyle(
-                        color: AppColors.accent2,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.2,
+              const SizedBox(height: 28),
+              if (flashSale.isNotEmpty)
+                Container(
+                  key: _sectionKeys[0],
+                  child: _promoSection(
+                    title: 'Flash Sale',
+                    subtitle:
+                        'Diskon ${flashSale.last.discountPercentage.round()}% - '
+                        '${flashSale.first.discountPercentage.round()}%',
+                    icon: Icons.bolt,
+                    products: flashSale,
+                  ),
+                ),
+              if (diskonSpesial.isNotEmpty)
+                Container(
+                  key: _sectionKeys[1],
+                  child: _promoSection(
+                    title: 'Diskon Spesial',
+                    subtitle:
+                        'Diskon ${diskonSpesial.last.discountPercentage.round()}% - '
+                        '${diskonSpesial.first.discountPercentage.round()}%',
+                    icon: Icons.local_offer_outlined,
+                    products: diskonSpesial,
+                  ),
+                ),
+              if (hemat.isNotEmpty)
+                Container(
+                  key: _sectionKeys[2],
+                  child: _promoSection(
+                    title: 'Hemat',
+                    subtitle:
+                        'Diskon ${hemat.last.discountPercentage.round()}% - '
+                        '${hemat.first.discountPercentage.round()}%',
+                    icon: Icons.savings_outlined,
+                    products: hemat,
+                  ),
+                ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _promoSection({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required List<Product> products,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: Colors.white, size: 18),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.ink,
+                        letterSpacing: -0.2,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  const Text(
-                    'Promo Pilihan\nMinggu Ini',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                      height: 1.25,
-                      letterSpacing: -0.5,
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        color: AppColors.muted,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Kurasi penawaran terbaik untukmu',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 28),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              'Penawaran Aktif',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.ink,
-                letterSpacing: -0.2,
+              Text(
+                '${products.length} produk',
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  color: AppColors.muted,
+                ),
               ),
-            ),
+            ],
           ),
-          const SizedBox(height: 14),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 260,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: promos.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemCount: products.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
-              final promo = promos[index];
-              return Material(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(16),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Opening: ${promo['title']}'),
-                        backgroundColor: AppColors.accent,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.border),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: AppColors.bg,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            promo['icon'],
-                            color: AppColors.ink,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                promo['tag'],
-                                style: const TextStyle(
-                                  fontSize: 9.5,
-                                  color: AppColors.muted,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                promo['title'],
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14.5,
-                                  color: AppColors.ink,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                promo['desc'],
-                                style: const TextStyle(
-                                  color: AppColors.muted,
-                                  fontSize: 12,
-                                  height: 1.35,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(
-                          Icons.arrow_forward_ios,
-                          color: AppColors.muted,
-                          size: 13,
-                        ),
-                      ],
-                    ),
-                  ),
+              final p = products[index];
+              return SizedBox(
+                width: 160,
+                child: Stack(
+                  clipBehavior: Clip.hardEdge,
+                  children: [
+                    Positioned.fill(child: ProductCard(product: p)),
+                  ],
                 ),
               );
             },
           ),
-          const SizedBox(height: 32),
-        ],
-      ),
+        ),
+        const SizedBox(height: 28),
+      ],
+    );
+  }
+
+  Widget _buildBudgetWidget() {
+    return AnimatedBuilder(
+      animation: BudgetRepository.instance,
+      builder: (context, _) {
+        final repo = BudgetRepository.instance;
+
+        if (!repo.hasBudget) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Material(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const BudgetScreen()),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: AppColors.bg,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.account_balance_wallet_outlined,
+                          color: AppColors.ink,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Set Budget Belanja',
+                              style: TextStyle(
+                                color: AppColors.ink,
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Pantau pengeluaran bulananmu',
+                              style: TextStyle(
+                                color: AppColors.muted,
+                                fontSize: 11.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios,
+                          color: AppColors.muted, size: 13),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        final progress = repo.progress;
+        final isOver = repo.isOverBudget;
+        final isNear = repo.isNearLimit;
+        final percent = (progress * 100).clamp(0, 999).toStringAsFixed(0);
+
+        Color progressColor;
+        if (isOver) {
+          progressColor = AppColors.danger;
+        } else if (isNear) {
+          progressColor = const Color(0xFFE0A458);
+        } else {
+          progressColor = const Color(0xFF6BAE85);
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Material(
+            color: AppColors.accent,
+            borderRadius: BorderRadius.circular(20),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const BudgetScreen()),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            'BUDGET BULAN INI',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '$percent%',
+                          style: TextStyle(
+                            color: progressColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          'Rp${_fmtShort(repo.totalSaved)}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'dari Rp${_fmtShort(repo.budget!.limit)}',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.55),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: LinearProgressIndicator(
+                        value: progress.clamp(0.0, 1.0),
+                        minHeight: 6,
+                        backgroundColor:
+                            Colors.white.withValues(alpha: 0.15),
+                        valueColor: AlwaysStoppedAnimation(progressColor),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Icon(
+                          isOver
+                              ? Icons.error_outline
+                              : Icons.check_circle_outline,
+                          color: isOver
+                              ? AppColors.danger
+                              : Colors.white.withValues(alpha: 0.6),
+                          size: 14,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          isOver
+                              ? 'Over budget Rp${_fmtShort(repo.totalSaved - repo.budget!.limit)}'
+                              : 'Sisa Rp${_fmtShort(repo.remaining)}',
+                          style: TextStyle(
+                            color: isOver
+                                ? AppColors.danger
+                                : Colors.white.withValues(alpha: 0.6),
+                            fontSize: 11.5,
+                            fontWeight:
+                                isOver ? FontWeight.w600 : FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
   Future<void> _handleRefresh() async {
+    final now = DateTime.now();
+    final sinceLast = _lastRefreshTime == null
+        ? const Duration(days: 1)
+        : now.difference(_lastRefreshTime!);
+
+    final shouldShuffle = sinceLast.inSeconds >= 5;
+
+    final newProducts =
+        await ProductRepository.instance.all(refresh: true);
+
+    final finalProducts = shouldShuffle
+        ? (List<Product>.from(newProducts)..shuffle())
+        : newProducts;
+
+    _lastRefreshTime = now;
+
+    if (!mounted) return;
     setState(() {
-      _productsFuture = ProductRepository.instance.all(refresh: true);
+      _productsFuture = Future.value(finalProducts);
     });
-    await _productsFuture;
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Beranda diperbarui'),
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                shouldShuffle ? Icons.shuffle : Icons.check_circle,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  shouldShuffle
+                      ? 'Menampilkan produk baru untukmu'
+                      : 'Sudah yang terbaru',
+                ),
+              ),
+            ],
+          ),
           backgroundColor: AppColors.accent,
           behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -584,60 +946,88 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: banners.length,
                 itemBuilder: (context, index) {
                   final banner = banners[index];
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: banner['color'],
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                banner['title'],
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: -0.4,
-                                  height: 1.2,
+                  return GestureDetector(
+                    onTap: () {
+                      final targetSection =
+                          banner['targetSection'] as int? ?? 0;
+                      _openPromoSection(targetSection);
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: banner['color'],
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  banner['title'],
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: -0.4,
+                                    height: 1.2,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                banner['subtitle'],
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.65),
-                                  fontSize: 12.5,
-                                  height: 1.4,
+                                const SizedBox(height: 8),
+                                Text(
+                                  banner['subtitle'],
+                                  style: TextStyle(
+                                    color:
+                                        Colors.white.withValues(alpha: 0.65),
+                                    fontSize: 12.5,
+                                    height: 1.4,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.12),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Lihat promo',
+                                      style: TextStyle(
+                                        color:
+                                            Colors.white.withValues(alpha: 0.9),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(
+                                      Icons.arrow_forward_rounded,
+                                      color: Colors.white,
+                                      size: 14,
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                          child: Icon(
-                            banner['icon'],
-                            color: AppColors.accent2,
-                            size: 28,
+                          const SizedBox(width: 16),
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.12),
+                              ),
+                            ),
+                            child: Icon(
+                              banner['icon'],
+                              color: AppColors.accent2,
+                              size: 28,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -665,7 +1055,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
+            _buildBudgetWidget(),
+            const SizedBox(height: 24),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: Text(
@@ -690,15 +1082,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   return Padding(
                     padding: const EdgeInsets.only(right: 20),
                     child: GestureDetector(
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${cat['name']}'),
-                            backgroundColor: AppColors.accent,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      },
+                      onTap: () => _openSearch(category: cat['slug']),
                       child: Column(
                         children: [
                           Container(
@@ -790,7 +1174,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 16,
                     crossAxisSpacing: 16,
@@ -833,9 +1218,8 @@ class _SavableProductWrapper extends StatelessWidget {
           child: AnimatedBuilder(
             animation: SavedFoldersRepository.instance,
             builder: (context, _) {
-              final isSaved = SavedFoldersRepository.instance.isSavedAnywhere(
-                product.id,
-              );
+              final isSaved =
+                  SavedFoldersRepository.instance.isSavedAnywhere(product.id);
               return GestureDetector(
                 onTap: () {
                   SaveToFolderSheet.show(context, product);
@@ -867,4 +1251,14 @@ class _SavableProductWrapper extends StatelessWidget {
       ],
     );
   }
+}
+
+String _fmtShort(num value) {
+  final str = value.toInt().toString();
+  final buffer = StringBuffer();
+  for (int i = 0; i < str.length; i++) {
+    if (i > 0 && (str.length - i) % 3 == 0) buffer.write('.');
+    buffer.write(str[i]);
+  }
+  return buffer.toString();
 }

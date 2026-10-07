@@ -89,14 +89,183 @@ class SavedScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              // Ruang ekstra biar FAB gak nutupin folder terakhir
+              const SliverToBoxAdapter(child: SizedBox(height: 80)),
             ],
           );
         },
+      ),
+
+      // ✅ FAB BUAT FOLDER BARU
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showCreateFolderDialog(context),
+        backgroundColor: AppColors.accent,
+        foregroundColor: Colors.white,
+        elevation: 2,
+        icon: const Icon(Icons.add, size: 20),
+        label: const Text(
+          'Folder Baru',
+          style: TextStyle(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ==========================================
+  // DIALOG BUAT FOLDER BARU
+  // ==========================================
+  void _showCreateFolderDialog(BuildContext context) {
+    final ctrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            'Folder baru',
+            style: TextStyle(
+              color: AppColors.ink,
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.2,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Beri nama folder sesuai isinya',
+                style: TextStyle(
+                  color: AppColors.muted,
+                  fontSize: 12.5,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: ctrl,
+                autofocus: true,
+                textCapitalization: TextCapitalization.sentences,
+                style: const TextStyle(
+                  color: AppColors.ink,
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w500,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Misal: Idol, Makanan, Wishlist',
+                  hintStyle: const TextStyle(
+                    color: AppColors.muted,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  filled: true,
+                  fillColor: AppColors.bg,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: AppColors.accent.withValues(alpha: 0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 14,
+                  ),
+                ),
+                onSubmitted: (value) {
+                  _createFolder(context, dialogContext, value);
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text(
+                'Batal',
+                style: TextStyle(color: AppColors.muted),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                _createFolder(context, dialogContext, ctrl.text);
+              },
+              child: const Text(
+                'Buat',
+                style: TextStyle(
+                  color: AppColors.ink,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _createFolder(
+    BuildContext context,
+    BuildContext dialogContext,
+    String name,
+  ) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Nama folder tidak boleh kosong'),
+          backgroundColor: AppColors.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // Cek duplikat (case-insensitive)
+    final exists = SavedFoldersRepository.instance.folders.any(
+      (f) => f.name.toLowerCase() == trimmed.toLowerCase(),
+    );
+    if (exists) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Folder "$trimmed" sudah ada'),
+          backgroundColor: AppColors.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    SavedFoldersRepository.instance.createFolder(trimmed);
+    Navigator.pop(dialogContext);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Folder "$trimmed" dibuat'),
+        backgroundColor: AppColors.accent,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
       ),
     );
   }
 }
 
+// ==========================================
+// CARD FOLDER
+// ==========================================
 class _FolderCard extends StatelessWidget {
   final dynamic folder;
   const _FolderCard({required this.folder});
