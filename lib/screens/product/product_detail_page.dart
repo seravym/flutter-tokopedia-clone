@@ -10,9 +10,11 @@ import '../../services/product_repository.dart';
 import '../../widgets/common.dart';
 import '../../widgets/product_card.dart';
 import '../cart/cart_page.dart';
+import '../store/seller_store_page.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final Product product;
+
   const ProductDetailPage({super.key, required this.product});
 
   @override
@@ -43,39 +45,56 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     HapticFeedback.lightImpact();
     final r = CartStore.instance.add(p, qty: _qty);
     setState(() {});
+
     switch (r) {
       case AddResult.outOfStock:
-        toast(context, 'Maaf, stok produk ini habis',
-            icon: Icons.error_outline_rounded);
+        toast(
+          context,
+          'Maaf, stok produk ini habis',
+          icon: Icons.error_outline_rounded,
+        );
         break;
+
       case AddResult.reachedLimit:
-        toast(context,
-            'Jumlah di keranjang sudah mencapai batas (${p.maxQty} barang)',
-            icon: Icons.info_outline_rounded,
-            actionLabel: 'Lihat',
-            onAction: _openCart);
+        toast(
+          context,
+          'Jumlah di keranjang sudah mencapai batas (${p.maxQty} barang)',
+          icon: Icons.info_outline_rounded,
+          actionLabel: 'Lihat',
+          onAction: _openCart,
+        );
         break;
+
       case AddResult.added:
-        toast(context, '$_qty barang masuk keranjang',
-            actionLabel: 'Lihat', onAction: _openCart);
+        toast(
+          context,
+          '$_qty barang masuk keranjang',
+          actionLabel: 'Lihat',
+          onAction: _openCart,
+        );
         break;
     }
   }
 
   void _buyNow() {
     final r = CartStore.instance.add(p, qty: _qty, exclusive: true);
+
     if (r == AddResult.outOfStock) {
-      toast(context, 'Maaf, stok produk ini habis',
-          icon: Icons.error_outline_rounded);
+      toast(
+        context,
+        'Maaf, stok produk ini habis',
+        icon: Icons.error_outline_rounded,
+      );
       return;
     }
+
     _openCart();
   }
 
   void _openCart() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const CartPage(showBack: true)),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const CartPage(showBack: true)));
   }
 
   void _openGallery(int start) {
@@ -119,31 +138,33 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-
   Widget _circleBtn(IconData icon, VoidCallback onTap) => Padding(
-        padding: const EdgeInsets.all(6),
-        child: GestureDetector(
-          onTap: onTap,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: softShadow(0.12),
-            ),
-            child: Icon(icon, color: AppColors.ink, size: 20),
-          ),
+    padding: const EdgeInsets.all(6),
+    child: GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: softShadow(0.12),
         ),
-      );
+        child: Icon(icon, color: AppColors.ink, size: 20),
+      ),
+    ),
+  );
 
   Widget _buildGalleryAppBar() {
     final h = MediaQuery.of(context).size.width.clamp(300.0, 480.0).toDouble();
+
     return SliverAppBar(
       pinned: true,
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.white,
       expandedHeight: h + 20,
       leading: _circleBtn(
-          Icons.arrow_back_ios_new_rounded, () => Navigator.of(context).pop()),
+        Icons.arrow_back_ios_new_rounded,
+        () => Navigator.of(context).pop(),
+      ),
       actions: [
         _circleBtn(Icons.search_rounded, () {
           Navigator.of(context).popUntil((r) => r.isFirst);
@@ -177,8 +198,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 right: 16,
                 bottom: 14,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.ink.withValues(alpha: 0.72),
                     borderRadius: BorderRadius.circular(100),
@@ -186,11 +209,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.photo_library_outlined,
-                          size: 14, color: Colors.white),
+                      const Icon(
+                        Icons.photo_library_outlined,
+                        size: 14,
+                        color: Colors.white,
+                      ),
                       const SizedBox(width: 6),
-                      Text('${_imgIndex + 1}/${p.images.length}',
-                          style: T.s(12, w: FontWeight.w700, c: Colors.white)),
+                      Text(
+                        '${_imgIndex + 1}/${p.images.length}',
+                        style: T.s(12, w: FontWeight.w700, c: Colors.white),
+                      ),
                     ],
                   ),
                 ),
@@ -221,10 +249,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (_, i) {
           final sel = i == _imgIndex;
+
           return GestureDetector(
-            onTap: () => _pager.animateToPage(i,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic),
+            onTap: () => _pager.animateToPage(
+              i,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+            ),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: 62,
@@ -245,8 +276,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-
-  Widget _card({required Widget child, EdgeInsets? margin, EdgeInsets? padding}) {
+  Widget _card({
+    required Widget child,
+    EdgeInsets? margin,
+    EdgeInsets? padding,
+  }) {
     return Container(
       width: double.infinity,
       margin: margin ?? const EdgeInsets.only(top: 10),
@@ -257,17 +291,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget _sectionTitle(String t, {Widget? trailing}) => Padding(
-        padding: const EdgeInsets.only(bottom: 14),
-        child: Row(
-          children: [
-            Expanded(child: Text(t, style: T.h3)),
-            if (trailing != null) trailing,
-          ],
-        ),
-      );
+    padding: const EdgeInsets.only(bottom: 14),
+    child: Row(
+      children: [
+        Expanded(child: Text(t, style: T.h3)),
+        if (trailing != null) trailing,
+      ],
+    ),
+  );
 
   Widget _priceCard() {
     final reviewCount = p.reviews.length;
+
     return _card(
       margin: EdgeInsets.zero,
       child: Column(
@@ -277,8 +312,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Flexible(
-                child: Text(rupiahInt(p.finalIdr),
-                    style: T.s(28, w: FontWeight.w800, ls: -1)),
+                child: Text(
+                  rupiahInt(p.finalIdr),
+                  style: T.s(28, w: FontWeight.w800, ls: -1),
+                ),
               ),
               if (p.hasDiscount) ...[
                 const SizedBox(width: 10),
@@ -289,16 +326,58 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ],
             ],
           ),
+
           if (p.hasDiscount)
             Padding(
               padding: const EdgeInsets.only(top: 2),
-              child: Text(rupiahInt(p.originalIdr),
-                  style: T.s(13,
-                      c: AppColors.sub, deco: TextDecoration.lineThrough)),
+              child: Text(
+                rupiahInt(p.originalIdr),
+                style: T.s(
+                  13,
+                  c: AppColors.sub,
+                  deco: TextDecoration.lineThrough,
+                ),
+              ),
             ),
+
           const SizedBox(height: 12),
+
           Text(p.title, style: T.s(17, w: FontWeight.w700, h: 1.35)),
+
           const SizedBox(height: 12),
+
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => SellerStorePage(product: p)),
+              );
+            },
+            child: Row(
+              children: [
+                Icon(
+                  Icons.storefront_outlined,
+                  size: 20,
+                  color: AppColors.green,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${p.displayBrand} Official Store',
+                    style: T.s(14, w: FontWeight.w700, c: AppColors.green),
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: AppColors.green,
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -311,42 +390,56 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 bg: const Color(0xFFFFF5DD),
                 fg: const Color(0xFFB77900),
               ),
-              Pill(kategoriLabel(p.category),
+              Pill(
+                kategoriLabel(p.category),
+                bg: AppColors.lilacSoft,
+                fg: AppColors.lilac,
+                onTap: () {
+                  Navigator.of(context).popUntil((r) => r.isFirst);
+                  AppNav.openSearch(category: p.category);
+                },
+              ),
+              if (p.fastShipping)
+                const Pill(
+                  'Pengiriman kilat',
+                  icon: Icons.bolt_rounded,
                   bg: AppColors.lilacSoft,
                   fg: AppColors.lilac,
-                  onTap: () {
-                    Navigator.of(context).popUntil((r) => r.isFirst);
-                    AppNav.openSearch(category: p.category);
-                  }),
-              if (p.fastShipping)
-                const Pill('Pengiriman kilat',
-                    icon: Icons.bolt_rounded,
-                    bg: AppColors.lilacSoft,
-                    fg: AppColors.lilac),
+                ),
               if (p.inStock)
                 Pill(
-                  p.stock <= 10 ? 'Sisa ${p.stock}! Buruan 🔥' : 'Stok ${p.stock}',
+                  p.stock <= 10
+                      ? 'Sisa ${p.stock}! Buruan 🔥'
+                      : 'Stok ${p.stock}',
                   bg: p.stock <= 10 ? AppColors.peachSoft : AppColors.mint,
                   fg: p.stock <= 10 ? AppColors.peach : AppColors.green,
                 )
               else
-                const Pill('Stok habis',
-                    bg: AppColors.peachSoft, fg: AppColors.peach),
+                const Pill(
+                  'Stok habis',
+                  bg: AppColors.peachSoft,
+                  fg: AppColors.peach,
+                ),
             ],
           ),
+
           if (p.tags.isNotEmpty) ...[
             const SizedBox(height: 14),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: p.tags
-                  .map((t) => Pill('#$t',
+                  .map(
+                    (t) => Pill(
+                      '#$t',
                       bg: AppColors.bg,
                       fg: AppColors.sub,
                       onTap: () {
                         Navigator.of(context).popUntil((r) => r.isFirst);
                         AppNav.openSearch(tag: t);
-                      }))
+                      },
+                    ),
+                  )
                   .toList(),
             ),
           ],
@@ -355,31 +448,38 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-
   Widget _variantCard(List<Product> siblings) {
     final all = [p, ...siblings];
+
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionTitle('Varian', trailing: Text(p.displayBrand, style: T.small)),
+          _sectionTitle(
+            'Varian',
+            trailing: Text(p.displayBrand, style: T.small),
+          ),
           Wrap(
             spacing: 10,
             runSpacing: 10,
             children: all.map((v) {
               final sel = v.id == p.id;
+
               return GestureDetector(
                 onTap: sel
                     ? null
                     : () => Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                              builder: (_) => ProductDetailPage(product: v)),
+                        MaterialPageRoute(
+                          builder: (_) => ProductDetailPage(product: v),
                         ),
+                      ),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   constraints: const BoxConstraints(maxWidth: 220),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: sel ? AppColors.mint : Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -405,14 +505,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(v.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: T.s(12,
-                                    w: FontWeight.w700,
-                                    c: sel ? AppColors.green : AppColors.ink)),
-                            Text(rupiahInt(v.finalIdr),
-                                style: T.s(11, c: AppColors.sub)),
+                            Text(
+                              v.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: T.s(
+                                12,
+                                w: FontWeight.w700,
+                                c: sel ? AppColors.green : AppColors.ink,
+                              ),
+                            ),
+                            Text(
+                              rupiahInt(v.finalIdr),
+                              style: T.s(11, c: AppColors.sub),
+                            ),
                           ],
                         ),
                       ),
@@ -428,10 +534,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-
   Widget _qtyCard() {
     final inCart = CartStore.instance.qtyOf(p.id);
     final max = p.maxQty < 1 ? 1 : p.maxQty;
+
     return _card(
       child: Row(
         children: [
@@ -444,8 +550,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 Text(
                   p.inStock
                       ? 'Maks. beli ${p.maxQty}'
-                          '${p.minOrder > 1 ? ' • Min. ${p.minOrder}' : ''}'
-                          '${inCart > 0 ? ' • di keranjang: $inCart' : ''}'
+                            '${p.minOrder > 1 ? ' • Min. ${p.minOrder}' : ''}'
+                            '${inCart > 0 ? ' • di keranjang: $inCart' : ''}'
                       : 'Stok sedang habis',
                   style: T.small,
                 ),
@@ -462,8 +568,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 max: max,
                 onChanged: (v) => setState(() => _qty = v),
                 onMaxReached: () => toast(
-                    context, 'Maksimal pembelian ${p.maxQty} barang',
-                    icon: Icons.info_outline_rounded),
+                  context,
+                  'Maksimal pembelian ${p.maxQty} barang',
+                  icon: Icons.info_outline_rounded,
+                ),
               ),
             ),
           ),
@@ -471,7 +579,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       ),
     );
   }
-
 
   Widget _descriptionCard() {
     return _card(
@@ -485,7 +592,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             child: Text(
               p.description,
               maxLines: _descOpen ? null : 4,
-              overflow: _descOpen ? TextOverflow.visible : TextOverflow.ellipsis,
+              overflow: _descOpen
+                  ? TextOverflow.visible
+                  : TextOverflow.ellipsis,
               style: T.s(14, h: 1.6, c: const Color(0xFF3B4741)),
             ),
           ),
@@ -505,7 +614,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-
   Widget _specCard() {
     final rows = <List<String>>[
       ['Brand', p.displayBrand],
@@ -517,6 +625,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       ['Kebijakan retur', p.returnPolicy],
       ['Min. pembelian', '${p.minOrder} barang'],
     ];
+
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -533,13 +642,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: 124,
-                    child: Text(rows[i][0], style: T.small),
-                  ),
+                  SizedBox(width: 124, child: Text(rows[i][0], style: T.small)),
                   Expanded(
-                    child: Text(rows[i][1],
-                        style: T.s(13, w: FontWeight.w600, h: 1.4)),
+                    child: Text(
+                      rows[i][1],
+                      style: T.s(13, w: FontWeight.w600, h: 1.4),
+                    ),
                   ),
                 ],
               ),
@@ -549,13 +657,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-
   Widget _reviewCard() {
     final reviews = p.reviews;
     final counts = List<int>.filled(6, 0);
+
     for (final r in reviews) {
-      if (r.rating >= 1 && r.rating <= 5) counts[r.rating]++;
+      if (r.rating >= 1 && r.rating <= 5) {
+        counts[r.rating]++;
+      }
     }
+
     final maxCount = counts.fold<int>(1, (a, b) => b > a ? b : a);
 
     return _card(
@@ -571,8 +682,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(p.rating.toStringAsFixed(1),
-                          style: T.s(40, w: FontWeight.w800, ls: -1.5, h: 1)),
+                      Text(
+                        p.rating.toStringAsFixed(1),
+                        style: T.s(40, w: FontWeight.w800, ls: -1.5, h: 1),
+                      ),
                       Padding(
                         padding: const EdgeInsets.only(bottom: 4, left: 2),
                         child: Text('/5', style: T.small),
@@ -596,8 +709,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           children: [
                             Text('$s', style: T.s(12, w: FontWeight.w700)),
                             const SizedBox(width: 4),
-                            const Icon(Icons.star_rounded,
-                                size: 12, color: AppColors.star),
+                            const Icon(
+                              Icons.star_rounded,
+                              size: 12,
+                              color: AppColors.star,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: ClipRRect(
@@ -607,15 +723,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   minHeight: 6,
                                   backgroundColor: AppColors.line,
                                   valueColor: const AlwaysStoppedAnimation(
-                                      AppColors.green),
+                                    AppColors.green,
+                                  ),
                                 ),
                               ),
                             ),
                             SizedBox(
                               width: 22,
-                              child: Text('${counts[s]}',
-                                  textAlign: TextAlign.right,
-                                  style: T.small),
+                              child: Text(
+                                '${counts[s]}',
+                                textAlign: TextAlign.right,
+                                style: T.small,
+                              ),
                             ),
                           ],
                         ),
@@ -634,8 +753,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 color: AppColors.bg,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Text('Belum ada ulasan untuk produk ini.',
-                  textAlign: TextAlign.center, style: T.small),
+              child: Text(
+                'Belum ada ulasan untuk produk ini.',
+                textAlign: TextAlign.center,
+                style: T.small,
+              ),
             )
           else
             for (final r in reviews) _reviewTile(r),
@@ -651,13 +773,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       AppColors.peachSoft,
       const Color(0xFFFFF5DD),
     ];
+
     final fg = [
       AppColors.green,
       AppColors.lilac,
       AppColors.peach,
       const Color(0xFFB77900),
     ];
+
     final ci = r.reviewerName.hashCode.abs() % colors.length;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -674,7 +799,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 radius: 18,
                 backgroundColor: colors[ci],
                 child: Text(
-                  r.reviewerName.isEmpty ? '?' : r.reviewerName[0].toUpperCase(),
+                  r.reviewerName.isEmpty
+                      ? '?'
+                      : r.reviewerName[0].toUpperCase(),
                   style: T.s(14, w: FontWeight.w800, c: fg[ci]),
                 ),
               ),
@@ -701,7 +828,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-
   Widget _relatedSection(List<Product> related) {
     return _card(
       padding: const EdgeInsets.only(top: 18, bottom: 18),
@@ -719,10 +845,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
               itemCount: related.length,
               separatorBuilder: (_, __) => const SizedBox(width: 14),
-              itemBuilder: (_, i) => SizedBox(
-                width: 170,
-                child: ProductCard(product: related[i]),
-              ),
+              itemBuilder: (_, i) =>
+                  SizedBox(width: 170, child: ProductCard(product: related[i])),
             ),
           ),
         ],
@@ -730,11 +854,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-
   Widget _bottomBar() {
     return Container(
       padding: EdgeInsets.fromLTRB(
-          16, 12, 16, 12 + MediaQuery.of(context).padding.bottom),
+        16,
+        12,
+        16,
+        12 + MediaQuery.of(context).padding.bottom,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -770,6 +897,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 class _FullscreenGallery extends StatefulWidget {
   final List<String> images;
   final int start;
+
   const _FullscreenGallery({required this.images, required this.start});
 
   @override
@@ -778,6 +906,7 @@ class _FullscreenGallery extends StatefulWidget {
 
 class _FullscreenGalleryState extends State<_FullscreenGallery> {
   late final PageController _c = PageController(initialPage: widget.start);
+
   late int _i = widget.start;
 
   @override
@@ -799,7 +928,9 @@ class _FullscreenGalleryState extends State<_FullscreenGallery> {
             itemBuilder: (_, i) => InteractiveViewer(
               minScale: 1,
               maxScale: 4,
-              child: Center(child: NetImage(widget.images[i], fit: BoxFit.contain)),
+              child: Center(
+                child: NetImage(widget.images[i], fit: BoxFit.contain),
+              ),
             ),
           ),
           SafeArea(
@@ -812,8 +943,10 @@ class _FullscreenGalleryState extends State<_FullscreenGallery> {
                     icon: const Icon(Icons.close_rounded, color: Colors.white),
                   ),
                   const Spacer(),
-                  Text('${_i + 1}/${widget.images.length}',
-                      style: T.s(14, w: FontWeight.w700, c: Colors.white)),
+                  Text(
+                    '${_i + 1}/${widget.images.length}',
+                    style: T.s(14, w: FontWeight.w700, c: Colors.white),
+                  ),
                   const SizedBox(width: 12),
                 ],
               ),
