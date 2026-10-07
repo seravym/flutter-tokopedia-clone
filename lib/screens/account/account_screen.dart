@@ -85,8 +85,6 @@ class AccountScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {},
                 ),
 
                 const Divider(height: 1),
@@ -106,8 +104,6 @@ class AccountScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {},
                 ),
 
                 const Divider(height: 1),
@@ -143,8 +139,6 @@ class AccountScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {},
                 ),
               ],
             ),
