@@ -13,6 +13,7 @@ import '../../widgets/product_card.dart';
 import '../../widgets/save_to_folder_sheet.dart';
 import '../saved/saved_screen.dart';
 import '../account/account_screen.dart';
+import '../orders/order_history_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -111,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _bannerController.dispose();
     super.dispose();
   }
-  
+
   PreferredSizeWidget _buildAppBar() {
     if (_currentIndex == 0) {
       return AppBar(
@@ -146,8 +147,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Row(
                       children: [
-                        const Icon(Icons.search,
-                            color: AppColors.muted, size: 20),
+                        const Icon(
+                          Icons.search,
+                          color: AppColors.muted,
+                          size: 20,
+                        ),
                         if (_isSearchExpanded) ...[
                           const SizedBox(width: 10),
                           const Expanded(
@@ -160,16 +164,23 @@ class _HomeScreenState extends State<HomeScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const Icon(Icons.camera_alt_outlined,
-                              color: AppColors.muted, size: 18),
+                          const Icon(
+                            Icons.camera_alt_outlined,
+                            color: AppColors.muted,
+                            size: 18,
+                          ),
                           const SizedBox(width: 8),
                           Container(
-                              height: 18,
-                              width: 1,
-                              color: AppColors.border),
+                            height: 18,
+                            width: 1,
+                            color: AppColors.border,
+                          ),
                           const SizedBox(width: 8),
-                          const Icon(Icons.qr_code_scanner,
-                              color: AppColors.muted, size: 18),
+                          const Icon(
+                            Icons.qr_code_scanner,
+                            color: AppColors.muted,
+                            size: 18,
+                          ),
                         ],
                       ],
                     ),
@@ -182,8 +193,11 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.notifications_none,
-                color: AppColors.ink, size: 22),
+            icon: const Icon(
+              Icons.notifications_none,
+              color: AppColors.ink,
+              size: 22,
+            ),
           ),
           AnimatedBuilder(
             animation: SavedFoldersRepository.instance,
@@ -196,13 +210,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const SavedScreen(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const SavedScreen()),
                       );
                     },
-                    icon: const Icon(Icons.bookmark_border,
-                        color: AppColors.ink, size: 22),
+                    icon: const Icon(
+                      Icons.bookmark_border,
+                      color: AppColors.ink,
+                      size: 22,
+                    ),
                   ),
                   if (count > 0)
                     Positioned(
@@ -210,7 +225,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       right: 6,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 1),
+                          horizontal: 5,
+                          vertical: 1,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.accent2,
                           borderRadius: BorderRadius.circular(10),
@@ -233,8 +250,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             onPressed: () => setState(() => _currentIndex = 2),
-            icon: const Icon(Icons.shopping_bag_outlined,
-                color: AppColors.ink, size: 22),
+            icon: const Icon(
+              Icons.shopping_bag_outlined,
+              color: AppColors.ink,
+              size: 22,
+            ),
           ),
         ],
       );
@@ -277,13 +297,19 @@ class _HomeScreenState extends State<HomeScreen> {
           : [
               IconButton(
                 onPressed: () {},
-                icon: const Icon(Icons.notifications_none,
-                    color: AppColors.ink, size: 22),
+                icon: const Icon(
+                  Icons.notifications_none,
+                  color: AppColors.ink,
+                  size: 22,
+                ),
               ),
               IconButton(
                 onPressed: () => setState(() => _currentIndex = 2),
-                icon: const Icon(Icons.shopping_bag_outlined,
-                    color: AppColors.ink, size: 22),
+                icon: const Icon(
+                  Icons.shopping_bag_outlined,
+                  color: AppColors.ink,
+                  size: 22,
+                ),
               ),
             ],
     );
@@ -349,6 +375,89 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Widget _buildAccountContent() {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        const Text(
+          'Akun Saya',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            color: AppColors.ink,
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: const Row(
+            children: [
+              CircleAvatar(
+                radius: 28,
+                child: Icon(Icons.person_outline, size: 28),
+              ),
+              SizedBox(width: 14),
+              Text(
+                'Pengguna Tokopedia',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.ink,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        Material(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const OrderHistoryPage()),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.receipt_long_outlined, color: AppColors.ink),
+                  SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      'Riwayat Pesanan',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.ink,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, color: AppColors.muted),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildPromoContent() {
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -370,7 +479,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.accent2.withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(20),
@@ -500,8 +611,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                         ),
-                        const Icon(Icons.arrow_forward_ios,
-                            color: AppColors.muted, size: 13),
+                        const Icon(
+                          Icons.arrow_forward_ios,
+                          color: AppColors.muted,
+                          size: 13,
+                        ),
                       ],
                     ),
                   ),
@@ -581,8 +695,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Text(
                                 banner['subtitle'],
                                 style: TextStyle(
-                                  color:
-                                      Colors.white.withValues(alpha: 0.65),
+                                  color: Colors.white.withValues(alpha: 0.65),
                                   fontSize: 12.5,
                                   height: 1.4,
                                 ),
@@ -735,8 +848,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Center(
                       child: Column(
                         children: [
-                          Text('Gagal memuat: ${snapshot.error}',
-                              textAlign: TextAlign.center),
+                          Text(
+                            'Gagal memuat: ${snapshot.error}',
+                            textAlign: TextAlign.center,
+                          ),
                           const SizedBox(height: 12),
                           TextButton(
                             onPressed: _handleRefresh,
@@ -758,8 +873,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 16,
                     crossAxisSpacing: 16,
@@ -783,14 +897,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
 class _SavableProductWrapper extends StatelessWidget {
   final Product product;
   final Widget child;
 
-  const _SavableProductWrapper({
-    required this.product,
-    required this.child,
-  });
+  const _SavableProductWrapper({required this.product, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -804,8 +916,9 @@ class _SavableProductWrapper extends StatelessWidget {
           child: AnimatedBuilder(
             animation: SavedFoldersRepository.instance,
             builder: (context, _) {
-              final isSaved = SavedFoldersRepository.instance
-                  .isSavedAnywhere(product.id);
+              final isSaved = SavedFoldersRepository.instance.isSavedAnywhere(
+                product.id,
+              );
               return GestureDetector(
                 onTap: () {
                   SaveToFolderSheet.show(context, product);
