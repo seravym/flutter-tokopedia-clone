@@ -156,7 +156,7 @@ class AccountScreen extends StatelessWidget {
               icon: const Icon(Icons.logout),
               label: const Text('Keluar'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color.fromARGB(255, 173, 47, 47)
+                foregroundColor: const Color.fromARGB(255, 173, 47, 47),
                 side: const BorderSide(color: Color.fromARGB(255, 0, 0, 0)),
               ),
             ),
