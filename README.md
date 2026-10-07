@@ -15,7 +15,7 @@ Aplikasi ini merupakan clone UI Tokopedia yang dibuat menggunakan Flutter.
 ## Pembagian Tugas
 
 - **Home & Splash/Loading Screen** - Sabrina
-- **Product Detail** - Nama
+- **Product Detail** - Yohana
 - **Cart & Checkout** - Nama
 - **Search & Wishlist** - Nama
 - **Profile, Auth & Core** - Nama

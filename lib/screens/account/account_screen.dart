@@ -4,6 +4,7 @@ import '../../services/auth_store.dart';
 import 'edit_profile_screen.dart';
 import 'address_screen.dart';
 import 'setting_screen.dart';
+import '../orders/order_history_page.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -30,11 +31,7 @@ class AccountScreen extends StatelessWidget {
                 const CircleAvatar(
                   radius: 32,
                   backgroundColor: Color(0xFFE8F5E9),
-                  child: Icon(
-                    Icons.person,
-                    size: 36,
-                    color: Colors.green,
-                  ),
+                  child: Icon(Icons.person, size: 36, color: Colors.green),
                 ),
                 const SizedBox(width: 15),
                 Expanded(
@@ -88,6 +85,8 @@ class AccountScreen extends StatelessWidget {
                       ),
                     );
                   },
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () {},
                 ),
 
                 const Divider(height: 1),
@@ -104,6 +103,24 @@ class AccountScreen extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => const AddressScreen(),
+                      ),
+                    );
+                  },
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () {},
+                ),
+
+                const Divider(height: 1),
+
+                ListTile(
+                  leading: const Icon(Icons.receipt_long_outlined),
+                  title: const Text('Riwayat Pesanan'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const OrderHistoryPage(),
                       ),
                     );
                   },
@@ -126,6 +143,8 @@ class AccountScreen extends StatelessWidget {
                       ),
                     );
                   },
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () {},
                 ),
               ],
             ),
