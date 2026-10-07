@@ -12,6 +12,7 @@ import '../../services/saved_folders_repository.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/save_to_folder_sheet.dart';
 import '../saved/saved_screen.dart';
+import '../account/account_screen.dart';
 import '../orders/order_history_page.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -368,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 3:
         return const Center(child: Text('Halaman Pengaturan'));
       case 4:
-        return _buildAccountContent();
+       return const AccountScreen();
       default:
         return _buildHomeContent();
     }
