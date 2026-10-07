@@ -18,7 +18,7 @@ import '../saved/saved_screen.dart';
 import '../account/account_screen.dart';
 import '../budget/budget_screen.dart';
 import '../search/search_screen.dart';
-import '../cart/cart_page.dart'; 
+import '../cart/cart_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -153,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   PreferredSizeWidget? _buildAppBar() {
     if (_showSearch) return null;
-    if (_currentIndex == 2) return null; 
+    if (_currentIndex == 2) return null;
     if (_currentIndex == 4) return null;
 
     if (_currentIndex == 0) {
@@ -194,16 +194,42 @@ class _HomeScreenState extends State<HomeScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const Icon(Icons.camera_alt_outlined,
-                              color: AppColors.muted, size: 18),
+                          GestureDetector(
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      'Fitur pencarian gambar segera hadir'),
+                                  backgroundColor: AppColors.accent,
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            child: const Icon(Icons.camera_alt_outlined,
+                                color: AppColors.muted, size: 18),
+                          ),
                           const SizedBox(width: 6),
                           Container(
                               height: 18,
                               width: 1,
                               color: AppColors.border),
                           const SizedBox(width: 6),
-                          const Icon(Icons.qr_code_scanner,
-                              color: AppColors.muted, size: 18),
+                          GestureDetector(
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      'Fitur scan barcode segera hadir'),
+                                  backgroundColor: AppColors.accent,
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            child: const Icon(Icons.qr_code_scanner,
+                                color: AppColors.muted, size: 18),
+                          ),
                         ],
                       ),
                     ),
@@ -409,7 +435,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 1:
         return _buildPromoContent();
       case 2:
-        return const CartPage(embedded: true); 
+        return const CartPage(embedded: true);
       case 3:
         return const Center(child: Text('Halaman Pengaturan'));
       case 4:
