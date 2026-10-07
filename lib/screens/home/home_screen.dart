@@ -369,93 +369,10 @@ class _HomeScreenState extends State<HomeScreen> {
       case 3:
         return const Center(child: Text('Halaman Pengaturan'));
       case 4:
-       return const AccountScreen();
+        return const AccountScreen();
       default:
         return _buildHomeContent();
     }
-  }
-
-  Widget _buildAccountContent() {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        const Text(
-          'Akun Saya',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            color: AppColors.ink,
-          ),
-        ),
-        const SizedBox(height: 24),
-
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: const Row(
-            children: [
-              CircleAvatar(
-                radius: 28,
-                child: Icon(Icons.person_outline, size: 28),
-              ),
-              SizedBox(width: 14),
-              Text(
-                'Pengguna Tokopedia',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.ink,
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        Material(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const OrderHistoryPage()),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.receipt_long_outlined, color: AppColors.ink),
-                  SizedBox(width: 14),
-                  Expanded(
-                    child: Text(
-                      'Riwayat Pesanan',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.ink,
-                      ),
-                    ),
-                  ),
-                  Icon(Icons.chevron_right, color: AppColors.muted),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
   }
 
   Widget _buildPromoContent() {
