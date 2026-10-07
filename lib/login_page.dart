@@ -32,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     if (berhasil) {
-      context.go('/profile');
+      context.go('/home');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -136,7 +136,7 @@ class _LoginPageState extends State<LoginPage> {
               child: ElevatedButton(
                 onPressed: login,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: const Color.fromARGB(255, 0, 0, 0),
                 ),
                 child: const Text(
                   'Login',
@@ -160,7 +160,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: const Text(
                     'Daftar',
                     style: TextStyle(
-                      color: Colors.green,
+                      color: Color.fromARGB(255, 0, 0, 0),
                     ),
                   ),
                 ),
