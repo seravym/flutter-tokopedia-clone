@@ -12,6 +12,7 @@ class Order {
   final int total;
   final String payment;
   final String address;
+  final String status;
 
   const Order({
     required this.id,
@@ -20,27 +21,30 @@ class Order {
     required this.total,
     required this.payment,
     required this.address,
+    required this.status,
   });
 
   factory Order.fromJson(Map<String, dynamic> j) => Order(
-        id: j['id'] as String,
-        date: DateTime.parse(j['date'] as String),
-        items: (j['items'] as List)
-            .map((e) => CartItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        total: j['total'] as int,
-        payment: j['payment'] as String,
-        address: j['address'] as String,
-      );
+    id: j['id'] as String,
+    date: DateTime.parse(j['date'] as String),
+    items: (j['items'] as List)
+        .map((e) => CartItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    total: j['total'] as int,
+    payment: j['payment'] as String,
+    address: j['address'] as String,
+    status: j['status'] as String? ?? 'Diproses',
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'date': date.toIso8601String(),
-        'items': items.map((e) => e.toJson()).toList(),
-        'total': total,
-        'payment': payment,
-        'address': address,
-      };
+    'id': id,
+    'date': date.toIso8601String(),
+    'items': items.map((e) => e.toJson()).toList(),
+    'total': total,
+    'payment': payment,
+    'address': address,
+    'status': status,
+  };
 }
 
 class OrderStore extends ChangeNotifier {
@@ -57,8 +61,11 @@ class OrderStore extends ChangeNotifier {
       if (raw == null) return;
       orders
         ..clear()
-        ..addAll((jsonDecode(raw) as List)
-            .map((e) => Order.fromJson(e as Map<String, dynamic>)));
+        ..addAll(
+          (jsonDecode(raw) as List).map(
+            (e) => Order.fromJson(e as Map<String, dynamic>),
+          ),
+        );
     } catch (_) {
       orders.clear();
     }
@@ -75,17 +82,19 @@ class OrderStore extends ChangeNotifier {
       id: 'TKP-${now.millisecondsSinceEpoch.toString().substring(4)}',
       date: now,
 
-      items: items
-          .map((e) => CartItem.fromJson(e.toJson()))
-          .toList(),
+      items: items.map((e) => CartItem.fromJson(e.toJson())).toList(),
       total: total,
       payment: payment,
       address: address,
+      status: 'Diproses',
     );
     orders.insert(0, order);
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_key, jsonEncode(orders.map((e) => e.toJson()).toList()));
+    await prefs.setString(
+      _key,
+      jsonEncode(orders.map((e) => e.toJson()).toList()),
+    );
     return order;
   }
 }
