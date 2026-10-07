@@ -7,6 +7,7 @@ class SearchBarWidget extends StatelessWidget {
   final Function(String) onChanged;
   final Function(String) onSubmitted;
   final VoidCallback onClear;
+  final VoidCallback? onBack; 
 
   const SearchBarWidget({
     super.key,
@@ -15,6 +16,7 @@ class SearchBarWidget extends StatelessWidget {
     required this.onChanged,
     required this.onSubmitted,
     required this.onClear,
+    this.onBack,
   });
 
   @override
@@ -24,7 +26,11 @@ class SearchBarWidget extends StatelessWidget {
         GestureDetector(
           onTap: () {
             focusNode.unfocus();
-            Navigator.pop(context);
+            if (onBack != null) {
+              onBack!();
+            } else {
+              Navigator.pop(context);
+            }
           },
           child: const Padding(
             padding: EdgeInsets.only(right: 12.0),
@@ -35,7 +41,7 @@ class SearchBarWidget extends StatelessWidget {
             ),
           ),
         ),
-        
+
         Expanded(
           child: Container(
             height: 42,
@@ -43,9 +49,8 @@ class SearchBarWidget extends StatelessWidget {
               color: AppColors.bg,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-             
-                color: focusNode.hasFocus ? AppColors.green : AppColors.line, 
-                width: 1.5
+                color: focusNode.hasFocus ? AppColors.green : AppColors.line,
+                width: 1.5,
               ),
             ),
             child: TextField(
@@ -64,10 +69,10 @@ class SearchBarWidget extends StatelessWidget {
                   color: AppColors.sub,
                   size: 20,
                 ),
-
                 suffixIcon: controller.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.sub),
+                        icon: const Icon(Icons.close_rounded,
+                            size: 18, color: AppColors.sub),
                         onPressed: onClear,
                       )
                     : null,
