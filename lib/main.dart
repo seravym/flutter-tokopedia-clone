@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '/screens/home/home_screen.dart';
 import '/screens/splash/loading_page.dart';
+import '/screens/onboarding/onboarding_screen.dart';
 import 'login_page.dart';
 import 'core/theme.dart';
 import 'services/auth_store.dart';
@@ -37,19 +38,24 @@ class MyApp extends StatelessWidget {
         // 1. Splash Screen
         GoRoute(path: '/', builder: (context, state) => const LoadingPage()),
 
-        // 2. Login Page
+        // 2. Onboarding Screen
+        GoRoute(
+          path: '/onboarding',
+          builder: (context, state) => const OnboardingScreen(),
+        ),
+        // 3. Login Page
         GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
 
-        // 3. OTP
+        // 4. OTP
         GoRoute(path: '/otp', builder: (context, state) => const OtpPage()),
 
-        // 4. Profile
+        // 5. Profile
         GoRoute(
           path: '/profile',
           builder: (context, state) => const ProfilePage(),
         ),
 
-        // 5. Home Screen
+        // 6. Home Screen
         GoRoute(
           path: '/home',
           pageBuilder: (context, state) => CustomTransitionPage(
@@ -65,7 +71,7 @@ class MyApp extends StatelessWidget {
                 },
           ),
         ),
-        // 6. Detail Product
+        // 7. Detail Product
         GoRoute(
           path: '/product/:id',
           builder: (context, state) {
