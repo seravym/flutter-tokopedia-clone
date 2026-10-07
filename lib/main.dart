@@ -13,6 +13,7 @@ import 'services/product_repository.dart';
 import 'screens/product/product_detail_page.dart';
 import 'pages/otp_page.dart';
 import 'pages/profile_page.dart';
+import 'pages/signUp_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,6 +46,11 @@ class MyApp extends StatelessWidget {
         ),
         // 3. Login Page
         GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+
+        GoRoute(
+          path: '/signup',
+          builder: (context, state) => const SignUpPage(),
+        ),
 
         // 4. OTP
         GoRoute(path: '/otp', builder: (context, state) => const OtpPage()),
