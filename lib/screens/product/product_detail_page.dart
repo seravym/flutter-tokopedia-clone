@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../widgets/flash_sale_timer.dart';
 
 import '../../core/format.dart';
 import '../../core/theme.dart';
@@ -123,6 +124,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           _buildGalleryAppBar(),
           if (p.images.length > 1) SliverToBoxAdapter(child: _thumbs()),
           SliverToBoxAdapter(child: _priceCard()),
+             if (p.hasDiscount)
+          FlashSaleTimer(discountPercentage: p.discountPercentage),
           if (siblings.isNotEmpty)
             SliverToBoxAdapter(child: _variantCard(siblings)),
           SliverToBoxAdapter(child: _qtyCard()),
