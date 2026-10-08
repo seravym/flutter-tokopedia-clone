@@ -8,7 +8,7 @@ Aplikasi ini merupakan clone UI Tokopedia yang dibuat menggunakan Flutter.
 
 - Sabrina Clarissa Hendra - 535250112
 - Yohana Pardede - 535250105
-- Nama - NIM
+- Valencia Chen - 535250123
 - Nama - NIM
 - Nama - NIM
 
@@ -17,7 +17,7 @@ Aplikasi ini merupakan clone UI Tokopedia yang dibuat menggunakan Flutter.
 - **Home & Splash/Loading Screen** - Sabrina
 - **Product Detail** - Nama
 - **Cart & Checkout** - Nama
-- **Search & Wishlist** - Nama
+- **Search & Wishlist** - Valencia Chen
 - **Profile, Auth & Core** - Nama
 
 ## User Flow
