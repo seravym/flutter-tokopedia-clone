@@ -1,16 +1,49 @@
-import 'package:flutter/material.dart';
+import 'dart:math';
 
-class OtpPage extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+class OtpPage extends StatefulWidget {
   const OtpPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    TextEditingController otpController = TextEditingController();
+  State<OtpPage> createState() => _OtpPageState();
+}
 
+class _OtpPageState extends State<OtpPage> {
+  TextEditingController otpController = TextEditingController();
+
+  String otp = '';
+
+  @override
+  void initState() {
+    super.initState();
+    buatOtp();
+  }
+
+  void buatOtp() {
+    Random random = Random();
+    otp = (100000 + random.nextInt(900000)).toString();
+
+    print('OTP: $otp');
+  }
+
+  void kirimUlang() {
+    setState(() {
+      buatOtp();
+      otpController.clear();
+    });
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('OTP baru telah dikirim')));
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Verifikasi OTP'),
-        backgroundColor: const Color(0xFF42B549),
+        backgroundColor: const Color.fromARGB(255, 14, 19, 15),
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -22,23 +55,20 @@ class OtpPage extends StatelessWidget {
             const Icon(
               Icons.lock_outline,
               size: 70,
-              color: Color(0xFF42B549),
+              color: Color.fromARGB(255, 34, 43, 34),
             ),
 
             const SizedBox(height: 20),
 
             const Text(
-              'Verifikasi Nomor',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              'Verifikasi akun',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
 
             const Text(
-              'Masukkan kode OTP yang dikirim ke nomor kamu',
+              'Masukkan kode OTP',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey),
             ),
@@ -63,10 +93,16 @@ class OtpPage extends StatelessWidget {
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pushReplacementNamed(context, '/profile');
+                  if (otpController.text == otp) {
+                    context.go('/home');
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Kode OTP salah')),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF42B549),
+                  backgroundColor: const Color.fromARGB(255, 0, 0, 0),
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Verifikasi'),
@@ -76,7 +112,7 @@ class OtpPage extends StatelessWidget {
             const SizedBox(height: 10),
 
             TextButton(
-              onPressed: () {},
+              onPressed: kirimUlang,
               child: const Text('Kirim ulang kode'),
             ),
           ],

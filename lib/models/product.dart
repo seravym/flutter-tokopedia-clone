@@ -19,6 +19,13 @@ class Review {
         date: DateTime.tryParse((j['date'] as String?) ?? ''),
         reviewerName: (j['reviewerName'] as String?) ?? 'Pembeli',
       );
+
+  Map<String, dynamic> toJson() => {
+        'rating': rating,
+        'comment': comment,
+        'date': date?.toIso8601String(),
+        'reviewerName': reviewerName,
+      };
 }
 
 class Product {
@@ -94,6 +101,28 @@ class Product {
           .toList(),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'description': description,
+        'category': category,
+        'price': priceUsd,
+        'discountPercentage': discountPercentage,
+        'rating': rating,
+        'stock': stock,
+        'tags': tags,
+        'brand': brand,
+        'sku': sku,
+        'warrantyInformation': warranty,
+        'shippingInformation': shipping,
+        'availabilityStatus': availability,
+        'returnPolicy': returnPolicy,
+        'minimumOrderQuantity': minOrder,
+        'thumbnail': thumbnail,
+        'images': images,
+        'reviews': reviews.map((r) => r.toJson()).toList(),
+      };
 
   int get originalIdr => usdToIdr(priceUsd);
 

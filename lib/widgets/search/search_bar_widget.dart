@@ -7,6 +7,7 @@ class SearchBarWidget extends StatelessWidget {
   final Function(String) onChanged;
   final Function(String) onSubmitted;
   final VoidCallback onClear;
+  final VoidCallback? onBack; 
 
   const SearchBarWidget({
     super.key,
@@ -15,27 +16,31 @@ class SearchBarWidget extends StatelessWidget {
     required this.onChanged,
     required this.onSubmitted,
     required this.onClear,
+    this.onBack,
   });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        GestureDetector(
-          onTap: () {
+        IconButton(
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+          onPressed: () {
             focusNode.unfocus();
-            Navigator.pop(context);
+            if (onBack != null) {
+              onBack!();
+            } else {
+              Navigator.pop(context);
+            }
           },
-          child: const Padding(
-            padding: EdgeInsets.only(right: 12.0),
-            child: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: AppColors.ink,
-              size: 20,
-            ),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppColors.ink,
+            size: 20,
           ),
         ),
-        
+
         Expanded(
           child: Container(
             height: 42,
@@ -43,9 +48,8 @@ class SearchBarWidget extends StatelessWidget {
               color: AppColors.bg,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-             
-                color: focusNode.hasFocus ? AppColors.green : AppColors.line, 
-                width: 1.5
+                color: focusNode.hasFocus ? AppColors.green : AppColors.line,
+                width: 1.5,
               ),
             ),
             child: TextField(
@@ -64,10 +68,10 @@ class SearchBarWidget extends StatelessWidget {
                   color: AppColors.sub,
                   size: 20,
                 ),
-
                 suffixIcon: controller.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.sub),
+                        icon: const Icon(Icons.close_rounded,
+                            size: 18, color: AppColors.sub),
                         onPressed: onClear,
                       )
                     : null,

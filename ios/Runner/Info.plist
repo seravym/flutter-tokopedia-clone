@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+		<string>Kamera dipakai untuk mencari produk lewat foto.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+		<string>Galeri dipakai untuk memilih foto produk.</string>
 </dict>
 </plist>

@@ -3,14 +3,20 @@ import 'package:go_router/go_router.dart';
 
 import '/screens/home/home_screen.dart';
 import '/screens/splash/loading_page.dart';
+import '/screens/onboarding/onboarding_screen.dart';
 import 'login_page.dart';
 import 'core/theme.dart';
 import 'services/auth_store.dart';
+import 'services/budget_repository.dart';
+import 'services/saved_folders_repository.dart';
 import 'services/cart_store.dart';
 import 'services/order_store.dart';
 import 'services/product_repository.dart';
 import 'screens/product/product_detail_page.dart';
 import 'services/wishlist_store.dart';
+import 'pages/otp_page.dart';
+import 'pages/profile_page.dart';
+import 'pages/signUp_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,8 +25,10 @@ Future<void> main() async {
     CartStore.instance.load(),
     OrderStore.instance.load(),
     WishlistStore.instance.load(),
+    BudgetRepository.instance.load(),
+    SavedFoldersRepository.instance.load(),
   ]);
-  
+
   runApp(const MyApp());
 }
 
@@ -36,6 +44,22 @@ class MyApp extends StatelessWidget {
       routes: [
         GoRoute(path: '/', builder: (context, state) => const LoadingPage()),
         GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+        GoRoute(path: '/', builder: (context, state) => const LoadingPage()),
+        GoRoute(
+          path: '/onboarding',
+          builder: (context, state) => const OnboardingScreen(),
+        ),
+        GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+
+        GoRoute(
+          path: '/signup',
+          builder: (context, state) => const SignUpPage(),
+        ),
+        GoRoute(path: '/otp', builder: (context, state) => const OtpPage()),
+        GoRoute(
+          path: '/profile',
+          builder: (context, state) => const ProfilePage(),
+        ),
         GoRoute(
           path: '/home',
           pageBuilder: (context, state) => CustomTransitionPage(
@@ -51,7 +75,7 @@ class MyApp extends StatelessWidget {
                 },
           ),
         ),
-       // 4. Detail Product 
+        // 7. Detail Product
         GoRoute(
           path: '/product/:id',
           builder: (context, state) {
@@ -94,7 +118,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Tokopedia Clone',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(), 
+      theme: AppTheme.light(),
       routerConfig: router,
     );
   }
