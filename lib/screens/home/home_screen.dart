@@ -20,6 +20,7 @@ import '../account/account_screen.dart';
 import '../budget/budget_screen.dart';
 import '../search/search_screen.dart';
 import '../cart/cart_page.dart';
+import '../settings/settings_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -459,7 +460,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 2:
         return const CartPage(embedded: true);
       case 3:
-        return const Center(child: Text('Halaman Pengaturan'));
+        return const SettingsPage();
       case 4:
         return const AccountScreen();
       default:
