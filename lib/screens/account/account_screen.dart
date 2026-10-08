@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../services/auth_store.dart';
 import 'edit_profile_screen.dart';
 import 'address_screen.dart';
-import 'setting_screen.dart';
 import '../orders/order_history_page.dart';
 
 class AccountScreen extends StatelessWidget {
@@ -122,20 +121,6 @@ class AccountScreen extends StatelessWidget {
                 ),
 
                 const Divider(height: 1),
-
-                ListTile(
-                  leading: const Icon(Icons.settings_outlined),
-                  title: const Text('Pengaturan'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SettingScreen(),
-                      ),
-                    );
-                  },
-                ),
               ],
             ),
           ),
