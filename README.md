@@ -10,13 +10,13 @@ Aplikasi ini merupakan clone UI Tokopedia yang dibuat menggunakan Flutter.
 - Yohana Pardede - 535250105
 - Valencia Chen - 535250123
 - Aurelia Cheryl Claresta - 535250104
-- Nama - NIM
+- Jasmine Malvina - 535250126
 
 ## Pembagian Tugas
 
 - **Home & Splash/Loading Screen** - Sabrina
 - **Product Detail** - Yohana
-- **Cart & Checkout** - Nama
+- **Cart & Checkout** - Jasmine
 - **Search & Wishlist** - Valencia Chen
 - **Profile, Auth & Core** - Aurelia
 
