@@ -10,6 +10,7 @@ import 'services/cart_store.dart';
 import 'services/order_store.dart';
 import 'services/product_repository.dart';
 import 'screens/product/product_detail_page.dart';
+import 'services/wishlist_store.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +18,7 @@ Future<void> main() async {
     AuthStore.instance.load(),
     CartStore.instance.load(),
     OrderStore.instance.load(),
+    WishlistStore.instance.load(),
   ]);
   
   runApp(const MyApp());
@@ -32,13 +34,8 @@ class MyApp extends StatelessWidget {
       debugLogDiagnostics: true,
 
       routes: [
-        // 1. Splash Screen 
         GoRoute(path: '/', builder: (context, state) => const LoadingPage()),
-
-        // 2. Login Page
         GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
-
-        // 3. Home Screen 
         GoRoute(
           path: '/home',
           pageBuilder: (context, state) => CustomTransitionPage(

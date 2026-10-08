@@ -4,7 +4,11 @@ import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 import '../../models/product.dart';
 import '../../services/product_repository.dart';
+import '../../services/app_nav.dart'; 
 import '../../widgets/product_card.dart'; 
+import '../search/search_screen.dart';
+import '../cart/cart_page.dart'; 
+import '../wishlist/wishlist_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -35,6 +39,22 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _productsFuture = ProductRepository.instance.all();
+    
+    AppNav.tab.addListener(_onTabChanged);
+  }
+
+  @override
+  void dispose() {
+    AppNav.tab.removeListener(_onTabChanged);
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (mounted) {
+      setState(() {
+        _currentIndex = AppNav.tab.value;
+      });
+    }
   }
 
   @override
@@ -44,29 +64,41 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: _appBarColor,
         elevation: 1,
-        title: Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Row(
-            children: [
-              SizedBox(width: 12),
-              Icon(Icons.search, color: Colors.grey),
-              SizedBox(width: 8),
-              Text('Cari di Tokopedia',
-                  style: TextStyle(color: Colors.grey, fontSize: 14)),
-            ],
+        title: GestureDetector(
+          onTap: () => AppNav.openSearch(),
+          child: Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Row(
+              children: [
+                SizedBox(width: 12),
+                Icon(Icons.search, color: Colors.grey),
+                SizedBox(width: 8),
+                Text('Cari di Tokopedia',
+                    style: TextStyle(color: Colors.grey, fontSize: 14)),
+              ],
+            ),
           ),
         ),
         actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const WishlistPage()),
+              );
+            },
+            icon: const Icon(Icons.favorite_border_rounded, color: Colors.black),
+          ),
           IconButton(
             onPressed: () {},
             icon: const Icon(Icons.notifications_none, color: Colors.black),
           ),
           IconButton(
-            onPressed: () => setState(() => _currentIndex = 1),
+            onPressed: () => AppNav.tab.value = 1,
             icon: const Icon(Icons.shopping_cart_outlined, color: Colors.black),
           ),
         ],
@@ -83,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
             tabBackgroundColor: Colors.grey.shade800,
             gap: 8,
             selectedIndex: _currentIndex,
-            onTabChange: (index) => setState(() => _currentIndex = index),
+            onTabChange: (index) => AppNav.tab.value = index,
             padding: const EdgeInsets.all(16),
             tabs: const [
               GButton(icon: Icons.home, text: 'Home'),
@@ -102,8 +134,12 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (_currentIndex) {
       case 0:
         return _buildHomeContent();
+      case 1:
+        return const CartPage(); 
+      case 2:
+        return const SearchScreen();
       default:
-        return const Center(child: Text('Page'));
+        return const Center(child: Text('Halaman Segera Hadir'));
     }
   }
 
@@ -133,7 +169,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Banner
             Container(
               margin: const EdgeInsets.all(16),
               height: 120,
@@ -149,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // Kategori
+
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Text('Kategori Pilihan',
@@ -164,19 +199,24 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: categories.length,
                 itemBuilder: (context, index) {
                   final cat = categories[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 20.0),
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Colors.grey[200],
-                          child: Icon(cat['icon'],
-                              color: _accentColor, size: 28),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(cat['name'], style: const TextStyle(fontSize: 12)),
-                      ],
+                  return GestureDetector(
+                    onTap: () {
+                      AppNav.openSearch(query: cat['name']);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 20.0),
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Colors.grey[200],
+                            child: Icon(cat['icon'],
+                                color: _accentColor, size: 28),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(cat['name'], style: const TextStyle(fontSize: 12)),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -184,7 +224,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Rekomendasi
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Text('Rekomendasi Untukmu',
@@ -192,7 +231,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Grid Produk 
             FutureBuilder<List<Product>>(
               future: _productsFuture,
               builder: (context, snapshot) {

@@ -10,8 +10,8 @@ import '../../widgets/search/search_bar_widget.dart';
 import '../../widgets/search/filter_chip_widget.dart';
 import '../../widgets/search/product_search_grid.dart';
 import '../../widgets/search/advanced_filter_bottom_sheet.dart';
-import '../../widgets/common.dart'; 
-
+import '../../widgets/search/product_search_skeleton.dart'; 
+import '../../widgets/common.dart';
 
 enum SortOption { defaultSort, lowestPrice, highestPrice, topRating }
 
@@ -53,7 +53,7 @@ class _SearchScreenState extends State<SearchScreen> {
     
     _searchFocusNode.addListener(() {
       setState(() {
-        _isSearching = _searchFocusNode.hasFocus && _searchQuery.isEmpty;
+        _isSearching = _searchFocusNode.hasFocus;
       });
     });
 
@@ -74,6 +74,7 @@ class _SearchScreenState extends State<SearchScreen> {
     await Future.wait([
       _loadProducts(),
       _loadSearchHistory(),
+      Future.delayed(const Duration(milliseconds: 600)),
     ]);
     
     _handleSearchIntent();
@@ -100,7 +101,6 @@ class _SearchScreenState extends State<SearchScreen> {
     if (cleanQuery.isEmpty) return;
 
     final prefs = await SharedPreferences.getInstance();
-
     _searchHistory.removeWhere((item) => item.toLowerCase() == cleanQuery.toLowerCase());
     _searchHistory.insert(0, cleanQuery);
 
@@ -115,9 +115,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _clearHistory() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_historyPrefKey);
-    setState(() {
-      _searchHistory.clear();
-    });
+    setState(() => _searchHistory.clear());
   }
 
   void _handleSearchIntent() {
@@ -144,11 +142,17 @@ class _SearchScreenState extends State<SearchScreen> {
     _searchQuery = query;
     _searchFocusNode.unfocus();
     _saveToHistory(query);
-    _applyFiltersAndSort();
+    setState(() {
+      _isLoading = true;
+    });
+    
+    Future.delayed(const Duration(milliseconds: 300), () {
+      _applyFiltersAndSort();
+      setState(() => _isLoading = false);
+    });
   }
 
   void _applyFiltersAndSort() {
-  
     var result = _allProducts.where((p) {
       final queryLower = _searchQuery.toLowerCase();
       final matchesQuery = p.title.toLowerCase().contains(queryLower) || 
@@ -176,13 +180,12 @@ class _SearchScreenState extends State<SearchScreen> {
         break;
       case SortOption.defaultSort:
       default:
-
         break;
     }
 
     setState(() {
       _filteredProducts = result;
-      _isSearching = _searchFocusNode.hasFocus && _searchQuery.isEmpty;
+      _isSearching = _searchFocusNode.hasFocus;
     });
   }
 
@@ -214,6 +217,47 @@ class _SearchScreenState extends State<SearchScreen> {
       });
       _applyFiltersAndSort();
     }
+  }
+
+  Widget _buildSearchSuggestions() {
+    if (_searchQuery.isEmpty) {
+      return _buildSearchHistory(); 
+    }
+
+    final queryLower = _searchQuery.toLowerCase();
+    final suggestions = <String>{};
+    
+    for (final p in _allProducts) {
+      if (p.title.toLowerCase().contains(queryLower)) suggestions.add(p.title);
+      if (p.brand != null && p.brand!.toLowerCase().contains(queryLower)) suggestions.add(p.brand!);
+      for (final tag in p.tags) {
+        if (tag.toLowerCase().contains(queryLower)) suggestions.add(tag);
+      }
+      if (suggestions.length >= 8) break;
+    }
+
+    if (suggestions.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 40),
+          child: Text('Cari "$_searchQuery"...', style: T.body),
+        ),
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: suggestions.map((s) => ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: const Icon(Icons.search_rounded, color: AppColors.sub),
+        title: Text(s, style: T.body),
+        trailing: const Icon(Icons.north_west_rounded, size: 16, color: AppColors.sub),
+        onTap: () {
+          _searchController.text = s;
+          _executeSearch(s);
+        },
+      )).toList(),
+    );
   }
 
   Widget _buildSearchHistory() {
@@ -268,48 +312,69 @@ class _SearchScreenState extends State<SearchScreen> {
           children: [
             Container(
               color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              child: SearchBarWidget(
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                onSubmitted: _executeSearch,
-                onChanged: (val) {
-                  setState(() {
-                    _searchQuery = val;
-                    _isSearching = val.isEmpty && _searchFocusNode.hasFocus;
-                  });
-                  if (val.isNotEmpty) _applyFiltersAndSort();
-                },
-                onClear: () {
-                  _searchController.clear();
-                  setState(() {
-                    _searchQuery = '';
-                    _isSearching = true;
-                  });
-                  _applyFiltersAndSort();
-                },
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SearchBarWidget(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
+                    onSubmitted: _executeSearch,
+                    onChanged: (val) {
+                      setState(() => _searchQuery = val);
+                    },
+                    onClear: () {
+                      _searchController.clear();
+                      setState(() => _searchQuery = '');
+                      _searchFocusNode.requestFocus();
+                    },
+                  ),
+                  if (_isSearching && _searchQuery.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            'Kemeja Pria', 'Sepatu Wanita', 'Laptop', 'Skincare'
+                          ].map((tag) => Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ActionChip(
+                              label: Text(tag, style: T.s(12, c: AppColors.sub)),
+                              backgroundColor: AppColors.bg,
+                              side: BorderSide.none,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                              onPressed: () {
+                                _searchController.text = tag;
+                                _executeSearch(tag);
+                              },
+                            ),
+                          )).toList(),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
             
             Expanded(
-              child: _isLoading 
-                ? const Center(child: CircularProgressIndicator(color: AppColors.green))
-                : _isSearching
-                  ? _buildSearchHistory()
-                  : CustomScrollView(
-                      slivers: [
-                        SliverAppBar(
-                          backgroundColor: Colors.white,
-                          automaticallyImplyLeading: false,
-                          pinned: true,
-                          elevation: 1,
-                          shadowColor: Colors.black.withValues(alpha: 0.1),
-                          toolbarHeight: 65,
-                          flexibleSpace: FlexibleSpaceBar(
-                            background: _buildFilterPanel(),
-                          ),
+              child: _isSearching
+                ? _buildSearchSuggestions() 
+                : CustomScrollView(
+                    slivers: [
+                      SliverAppBar(
+                        backgroundColor: Colors.white,
+                        automaticallyImplyLeading: false,
+                        pinned: true,
+                        elevation: 1,
+                        shadowColor: Colors.black.withValues(alpha: 0.1),
+                        toolbarHeight: 65,
+                        flexibleSpace: FlexibleSpaceBar(
+                          background: _buildFilterPanel(),
                         ),
-                        
+                      ),
+                      
+                      if (!_isLoading)
                         SliverToBoxAdapter(
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -330,37 +395,39 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                         ),
 
-                        SliverPadding(
-                          padding: const EdgeInsets.only(bottom: 100),
-                          sliver: _filteredProducts.isEmpty
-                            ? SliverToBoxAdapter(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 60),
-                                  child: EmptyState(
-                                    icon: Icons.search_off_rounded,
-                                    title: 'Oops, produk tidak ditemukan',
-                                    subtitle: 'Coba kurangi filter atau gunakan kata kunci yang lebih umum.',
-                                    actionLabel: 'Hapus Semua Filter',
-                                    onAction: () {
-                                      setState(() {
-                                        _searchController.clear();
-                                        _searchQuery = '';
-                                        _selectedCategory = null;
-                                        _minPrice = null;
-                                        _maxPrice = null;
-                                        _fastShippingOnly = false;
-                                        _minRating = 0;
-                                        _currentSort = SortOption.defaultSort;
-                                      });
-                                      _applyFiltersAndSort();
-                                    },
-                                  ),
-                                ),
-                              )
-                            : ProductSearchGrid(products: _filteredProducts),
-                        ),
-                      ],
-                    ),
+                      if (_isLoading)
+                        const ProductSearchSkeleton()
+                      else if (_filteredProducts.isEmpty)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 60),
+                            child: EmptyState(
+                              icon: Icons.search_off_rounded,
+                              title: 'Oops, produk tidak ditemukan',
+                              subtitle: 'Coba kurangi filter atau gunakan kata kunci yang lebih umum.',
+                              actionLabel: 'Hapus Semua Filter',
+                              onAction: () {
+                                setState(() {
+                                  _searchController.clear();
+                                  _searchQuery = '';
+                                  _selectedCategory = null;
+                                  _minPrice = null;
+                                  _maxPrice = null;
+                                  _fastShippingOnly = false;
+                                  _minRating = 0;
+                                  _currentSort = SortOption.defaultSort;
+                                });
+                                _applyFiltersAndSort();
+                              },
+                            ),
+                          ),
+                        )
+                      else
+                        ProductSearchGrid(products: _filteredProducts),
+                        
+                      const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                    ],
+                  ),
             ),
           ],
         ),
@@ -398,7 +465,7 @@ class _SearchScreenState extends State<SearchScreen> {
               isSelected: _selectedCategory == null,
               onTap: () {
                 _selectedCategory = null;
-                _applyFiltersAndSort();
+                _executeSearch(_searchQuery); 
               },
             );
           }
@@ -409,7 +476,7 @@ class _SearchScreenState extends State<SearchScreen> {
             isSelected: _selectedCategory == cat,
             onTap: () {
               _selectedCategory = cat;
-              _applyFiltersAndSort();
+              _executeSearch(_searchQuery); 
             },
           );
         },

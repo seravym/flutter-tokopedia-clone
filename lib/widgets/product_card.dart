@@ -1,15 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; 
 
 import '../core/format.dart';
 import '../core/theme.dart';
 import '../models/product.dart';
 import '../screens/product/product_detail_page.dart';
+import '../services/wishlist_store.dart'; 
 import 'common.dart';
 
 void openProduct(BuildContext context, Product p) {
   Navigator.of(context).push(
     MaterialPageRoute(builder: (_) => ProductDetailPage(product: p)),
   );
+}
+
+class _FavoriteButton extends StatelessWidget {
+  final Product product;
+  const _FavoriteButton({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: WishlistStore.instance,
+      builder: (context, _) {
+        final isFav = WishlistStore.instance.isFavorite(product.id);
+        return GestureDetector(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            WishlistStore.instance.toggle(product.id);
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: softShadow(0.1),
+            ),
+            child: Icon(
+              isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+              size: 18,
+              color: isFav ? AppColors.peach : AppColors.sub,
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class ProductCard extends StatelessWidget {
@@ -69,6 +105,11 @@ class ProductCard extends StatelessWidget {
                         ),
                       ),
                     ),
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: _FavoriteButton(product: p),
+                  ),
                 ],
               ),
             ),
