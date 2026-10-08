@@ -13,6 +13,7 @@ import '../../widgets/common.dart';
 import '../../widgets/product_card.dart';
 import '../cart/cart_page.dart';
 import '../store/seller_store_page.dart';
+import '../chat/seller_chat_page.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final Product product;
@@ -379,6 +380,47 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   color: AppColors.green,
                 ),
               ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => SellerChatPage(product: p)),
+              );
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.mintSoft,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.green),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.chat_bubble_outline_rounded,
+                    size: 20,
+                    color: AppColors.green,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Chat Seller',
+                      style: T.s(14, w: FontWeight.w700, c: AppColors.green),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 14,
+                    color: AppColors.green,
+                  ),
+                ],
+              ),
             ),
           ),
 

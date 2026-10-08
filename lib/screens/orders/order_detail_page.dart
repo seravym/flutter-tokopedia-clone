@@ -116,7 +116,7 @@ class OrderDetailPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Pengiriman',
+                  'Alamat Pengiriman',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
