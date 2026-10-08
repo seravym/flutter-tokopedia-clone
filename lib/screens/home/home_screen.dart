@@ -20,11 +20,8 @@ import '../account/account_screen.dart';
 import '../budget/budget_screen.dart';
 import '../search/search_screen.dart';
 import '../cart/cart_page.dart';
-<<<<<<< HEAD
-import '../settings/settings_page.dart';
-=======
 import '../wishlist/wishlist_page.dart';
->>>>>>> b3a0804c0b89d4096811823961d923651e21f7a4
+import '../settings/settings_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -515,7 +512,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 2:
         return const CartPage();
       case 3:
-        return const SettingsPage();
+        return SettingsPage();
       case 4:
         return const AccountScreen();
       default:
