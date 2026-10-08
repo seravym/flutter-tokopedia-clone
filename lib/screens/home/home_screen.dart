@@ -6,12 +6,12 @@ import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../../core/app_colors.dart';
-import '../../core/format.dart';
 import '../../models/product.dart';
 import '../../services/product_repository.dart';
+import '../../services/app_nav.dart';
 import '../../services/saved_folders_repository.dart';
 import '../../services/budget_repository.dart';
-import '../../services/app_nav.dart';
+import '../../services/cart_store.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/save_to_folder_sheet.dart';
 import '../../widgets/image_search_sheet.dart';
@@ -20,7 +20,11 @@ import '../account/account_screen.dart';
 import '../budget/budget_screen.dart';
 import '../search/search_screen.dart';
 import '../cart/cart_page.dart';
+<<<<<<< HEAD
 import '../settings/settings_page.dart';
+=======
+import '../wishlist/wishlist_page.dart';
+>>>>>>> b3a0804c0b89d4096811823961d923651e21f7a4
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -86,25 +90,34 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _productsFuture = ProductRepository.instance.all();
+    AppNav.tab.addListener(_onTabChanged);
 
     _autoScrollTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
-      if (_bannerController.hasClients) {
-        final nextPage = (_currentBannerIndex + 1) % banners.length;
-        _bannerController.animateToPage(
-          nextPage,
-          duration: const Duration(milliseconds: 600),
-          curve: Curves.easeInOutCubic,
-        );
-      }
+      if (!mounted || !_bannerController.hasClients) return;
+      final nextPage = (_currentBannerIndex + 1) % banners.length;
+      _bannerController.animateToPage(
+        nextPage,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOutCubic,
+      );
     });
   }
 
   @override
   void dispose() {
+    AppNav.tab.removeListener(_onTabChanged);
     _autoScrollTimer?.cancel();
     _bannerController.dispose();
     _promoScrollController.dispose();
     super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (!mounted) return;
+    setState(() {
+      _currentIndex = AppNav.tab.value;
+      _showSearch = false;
+    });
   }
 
   void _openSearch({String? category, String? query, String? tag}) {
@@ -122,10 +135,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _openPromoSection(int sectionIndex) {
     setState(() {
-      _currentIndex = 1;
       _showSearch = false;
       _pendingPromoSection = sectionIndex;
     });
+    AppNav.tab.value = 1;
   }
 
   void _scrollToPendingPromoSection() {
@@ -152,10 +165,63 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildCartButton({double size = 22}) {
+    return ListenableBuilder(
+      listenable: CartStore.instance,
+      builder: (context, _) {
+        final count = CartStore.instance.totalQty;
+        return Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              onPressed: () => AppNav.tab.value = 2,
+              icon: Icon(
+                Icons.shopping_bag_outlined,
+                color: AppColors.ink,
+                size: size,
+              ),
+            ),
+            if (count > 0)
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 1,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.danger,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                  child: Text(
+                    count > 99 ? '99+' : '$count',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      height: 1.1,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
   PreferredSizeWidget? _buildAppBar() {
     if (_showSearch) return null;
-    if (_currentIndex == 2) return null;
-    if (_currentIndex == 4) return null;
+    if (_currentIndex == 2) return null; 
+    if (_currentIndex == 4) return null; 
 
     if (_currentIndex == 0) {
       return AppBar(
@@ -244,13 +310,18 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const WishlistPage()),
+              );
+            },
             icon: const Icon(
-              Icons.notifications_none,
-              color: AppColors.ink,
-              size: 22,
+              Icons.favorite_border_rounded,
+              color: Colors.black,
             ),
           ),
+
           AnimatedBuilder(
             animation: BudgetRepository.instance,
             builder: (context, _) {
@@ -264,7 +335,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const BudgetScreen()),
+                        MaterialPageRoute(
+                          builder: (_) => const BudgetScreen(),
+                        ),
                       );
                     },
                     icon: const Icon(
@@ -290,6 +363,7 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
+
           AnimatedBuilder(
             animation: SavedFoldersRepository.instance,
             builder: (context, _) {
@@ -301,7 +375,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const SavedScreen()),
+                        MaterialPageRoute(
+                          builder: (_) => const SavedScreen(),
+                        ),
                       );
                     },
                     icon: const Icon(
@@ -339,14 +415,8 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
-          IconButton(
-            onPressed: () => setState(() => _currentIndex = 2),
-            icon: const Icon(
-              Icons.shopping_bag_outlined,
-              color: AppColors.ink,
-              size: 22,
-            ),
-          ),
+
+          _buildCartButton(),
         ],
       );
     }
@@ -378,22 +448,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       actions: [
-        IconButton(
-          onPressed: () {},
-          icon: const Icon(
-            Icons.notifications_none,
-            color: AppColors.ink,
-            size: 22,
-          ),
-        ),
-        IconButton(
-          onPressed: () => setState(() => _currentIndex = 2),
-          icon: const Icon(
-            Icons.shopping_bag_outlined,
-            color: AppColors.ink,
-            size: 22,
-          ),
-        ),
+        _buildCartButton(),
       ],
     );
   }
@@ -406,43 +461,43 @@ class _HomeScreenState extends State<HomeScreen> {
         if (!didPop) _closeSearch();
       },
       child: Scaffold(
-      backgroundColor: AppColors.bg,
-      appBar: _buildAppBar(),
-      body: _buildBody(),
-      bottomNavigationBar: Container(
-        color: AppColors.accent,
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: GNav(
-              backgroundColor: AppColors.accent,
-              color: Colors.grey,
-              activeColor: Colors.white,
-              tabBackgroundColor: Colors.white.withValues(alpha: 0.12),
-              rippleColor: Colors.white.withValues(alpha: 0.1),
-              hoverColor: Colors.white.withValues(alpha: 0.08),
-              gap: 6,
-              selectedIndex: _currentIndex,
-              onTabChange: (index) => setState(() {
-                _currentIndex = index;
-                _showSearch = false;
-              }),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              duration: const Duration(milliseconds: 300),
-              tabBorderRadius: 14,
-              curve: Curves.easeInOutCubic,
-              tabs: const [
-                GButton(icon: Icons.home_outlined, text: 'Home'),
-                GButton(icon: Icons.local_offer_outlined, text: 'Promo'),
-                GButton(icon: Icons.shopping_bag_outlined, text: 'Cart'),
-                GButton(icon: Icons.tune_outlined, text: 'Settings'),
-                GButton(icon: Icons.person_outline, text: 'Account'),
-              ],
+        backgroundColor: AppColors.bg,
+        appBar: _buildAppBar(),
+        body: _buildBody(),
+        bottomNavigationBar: Container(
+          color: AppColors.accent,
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: GNav(
+                backgroundColor: AppColors.accent,
+                color: Colors.grey,
+                activeColor: Colors.white,
+                tabBackgroundColor: Colors.white.withValues(alpha: 0.12),
+                rippleColor: Colors.white.withValues(alpha: 0.1),
+                hoverColor: Colors.white.withValues(alpha: 0.08),
+                gap: 6,
+                selectedIndex: _currentIndex,
+                onTabChange: (index) => AppNav.tab.value = index,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                duration: const Duration(milliseconds: 300),
+                tabBorderRadius: 14,
+                curve: Curves.easeInOutCubic,
+                tabs: const [
+                  GButton(icon: Icons.home_outlined, text: 'Home'),
+                  GButton(icon: Icons.local_offer_outlined, text: 'Promo'),
+                  GButton(icon: Icons.shopping_bag_outlined, text: 'Cart'),
+                  GButton(icon: Icons.tune_outlined, text: 'Settings'),
+                  GButton(icon: Icons.person_outline, text: 'Account'),
+                ],
+              ),
             ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -458,7 +513,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 1:
         return _buildPromoContent();
       case 2:
-        return const CartPage(embedded: true);
+        return const CartPage();
       case 3:
         return const SettingsPage();
       case 4:
@@ -489,20 +544,26 @@ class _HomeScreenState extends State<HomeScreen> {
         });
 
         final allProducts = snapshot.data ?? [];
-        final sorted = List<Product>.from(
-          allProducts,
-        )..sort((a, b) => b.discountPercentage.compareTo(a.discountPercentage));
+        final sorted = List<Product>.from(allProducts)
+          ..sort(
+            (a, b) => b.discountPercentage.compareTo(a.discountPercentage),
+          );
 
-        final discounted = sorted
-            .where((p) => p.discountPercentage > 0)
-            .toList();
+        final discounted =
+            sorted.where((p) => p.discountPercentage > 0).toList();
 
         final total = discounted.length;
-        final chunk = (total / 3).ceil();
+        final chunk = total == 0 ? 0 : (total / 3).ceil();
 
-        final flashSale = discounted.take(chunk).toList();
-        final diskonSpesial = discounted.skip(chunk).take(chunk).toList();
-        final hemat = discounted.skip(chunk * 2).take(chunk).toList();
+        final flashSale = chunk == 0
+            ? <Product>[]
+            : discounted.take(chunk).toList();
+        final diskonSpesial = chunk == 0
+            ? <Product>[]
+            : discounted.skip(chunk).take(chunk).toList();
+        final hemat = chunk == 0
+            ? <Product>[]
+            : discounted.skip(chunk * 2).take(chunk).toList();
 
         return SingleChildScrollView(
           controller: _promoScrollController,
@@ -654,7 +715,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               Text(
                 '${products.length} produk',
-                style: const TextStyle(fontSize: 11.5, color: AppColors.muted),
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  color: AppColors.muted,
+                ),
               ),
             ],
           ),
@@ -673,7 +737,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 160,
                 child: Stack(
                   clipBehavior: Clip.hardEdge,
-                  children: [Positioned.fill(child: ProductCard(product: p))],
+                  children: [
+                    Positioned.fill(child: ProductCard(product: p)),
+                  ],
                 ),
               );
             },
@@ -856,7 +922,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: LinearProgressIndicator(
                         value: progress.clamp(0.0, 1.0),
                         minHeight: 6,
-                        backgroundColor: Colors.white.withValues(alpha: 0.15),
+                        backgroundColor:
+                            Colors.white.withValues(alpha: 0.15),
                         valueColor: AlwaysStoppedAnimation(progressColor),
                       ),
                     ),
@@ -1004,7 +1071,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Text(
                                   banner['subtitle'],
                                   style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.65),
+                                    color: Colors.white
+                                        .withValues(alpha: 0.65),
                                     fontSize: 12.5,
                                     height: 1.4,
                                   ),
@@ -1015,9 +1083,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Text(
                                       'Lihat promo',
                                       style: TextStyle(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.9,
-                                        ),
+                                        color: Colors.white
+                                            .withValues(alpha: 0.9),
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -1041,7 +1108,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               color: Colors.white.withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.12),
+                                color:
+                                    Colors.white.withValues(alpha: 0.12),
                               ),
                             ),
                             child: Icon(
@@ -1106,7 +1174,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   return Padding(
                     padding: const EdgeInsets.only(right: 20),
                     child: GestureDetector(
-                      onTap: () => _openSearch(category: cat['slug']),
+                      onTap: () =>
+                          _openSearch(category: cat['slug'] as String?),
                       child: Column(
                         children: [
                           Container(
@@ -1118,14 +1187,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               border: Border.all(color: AppColors.border),
                             ),
                             child: Icon(
-                              cat['icon'],
+                              cat['icon'] as IconData,
                               color: AppColors.ink,
                               size: 24,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            cat['name'],
+                            cat['name'] as String,
                             style: const TextStyle(
                               fontSize: 11.5,
                               color: AppColors.ink,
@@ -1198,7 +1267,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 16,
                     crossAxisSpacing: 16,
@@ -1227,7 +1297,10 @@ class _SavableProductWrapper extends StatelessWidget {
   final Product product;
   final Widget child;
 
-  const _SavableProductWrapper({required this.product, required this.child});
+  const _SavableProductWrapper({
+    required this.product,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1241,9 +1314,8 @@ class _SavableProductWrapper extends StatelessWidget {
           child: AnimatedBuilder(
             animation: SavedFoldersRepository.instance,
             builder: (context, _) {
-              final isSaved = SavedFoldersRepository.instance.isSavedAnywhere(
-                product.id,
-              );
+              final isSaved =
+                  SavedFoldersRepository.instance.isSavedAnywhere(product.id);
               return GestureDetector(
                 onTap: () {
                   SaveToFolderSheet.show(context, product);
