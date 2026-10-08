@@ -14,6 +14,7 @@ import '../../services/budget_repository.dart';
 import '../../services/app_nav.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/save_to_folder_sheet.dart';
+import '../../widgets/image_search_sheet.dart';
 import '../saved/saved_screen.dart';
 import '../account/account_screen.dart';
 import '../budget/budget_screen.dart';
@@ -33,7 +34,9 @@ class _HomeScreenState extends State<HomeScreen> {
   DateTime? _lastRefreshTime;
 
   final ScrollController _promoScrollController = ScrollController();
-  int? _pendingPromoScroll;
+  final List<GlobalKey> _promoSectionKeys =
+      List.generate(3, (_) => GlobalKey());
+  int? _pendingPromoSection;
 
   late Future<List<Product>> _productsFuture;
 
@@ -78,12 +81,6 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   ];
 
-  final Map<int, GlobalKey> _sectionKeys = {
-    0: GlobalKey(),
-    1: GlobalKey(),
-    2: GlobalKey(),
-  };
-
   @override
   void initState() {
     super.initState();
@@ -126,29 +123,32 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _currentIndex = 1;
       _showSearch = false;
-      _pendingPromoScroll = sectionIndex;
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToPromoSection();
+      _pendingPromoSection = sectionIndex;
     });
   }
 
-  void _scrollToPromoSection() {
-    final sectionIndex = _pendingPromoScroll;
-    if (sectionIndex == null) return;
-
-    final key = _sectionKeys[sectionIndex];
-    if (key == null || key.currentContext == null) return;
-
+  void _scrollToPendingPromoSection() {
+    final target = _pendingPromoSection;
+    if (target == null) return;
+    _pendingPromoSection = null;
+    final ctx = _promoSectionKeys[target].currentContext;
+    if (ctx == null) return;
     Scrollable.ensureVisible(
-      key.currentContext!,
+      ctx,
+      alignment: 0.0,
       duration: const Duration(milliseconds: 600),
       curve: Curves.easeInOutCubic,
-      alignment: 0.05,
     );
+  }
 
-    _pendingPromoScroll = null;
+  void _openImageSearch() {
+    showImageSearchSheet(
+      context,
+      onSelect: ({String? category, String? query}) {
+        if (!mounted) return;
+        _openSearch(category: category, query: query);
+      },
+    );
   }
 
   PreferredSizeWidget? _buildAppBar() {
@@ -181,8 +181,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Row(
                         children: [
-                          const Icon(Icons.search,
-                              color: AppColors.muted, size: 20),
+                          const Icon(
+                            Icons.search,
+                            color: AppColors.muted,
+                            size: 20,
+                          ),
                           const SizedBox(width: 10),
                           const Expanded(
                             child: Text(
@@ -195,40 +198,39 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           GestureDetector(
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'Fitur pencarian gambar segera hadir'),
-                                  backgroundColor: AppColors.accent,
-                                  behavior: SnackBarBehavior.floating,
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                            },
-                            child: const Icon(Icons.camera_alt_outlined,
-                                color: AppColors.muted, size: 18),
+                            behavior: HitTestBehavior.opaque,
+                            onTap: _openImageSearch,
+                            child: const Icon(
+                              Icons.camera_alt_outlined,
+                              color: AppColors.muted,
+                              size: 18,
+                            ),
                           ),
                           const SizedBox(width: 6),
                           Container(
-                              height: 18,
-                              width: 1,
-                              color: AppColors.border),
+                            height: 18,
+                            width: 1,
+                            color: AppColors.border,
+                          ),
                           const SizedBox(width: 6),
                           GestureDetector(
                             onTap: () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
-                                      'Fitur scan barcode segera hadir'),
+                                    'Fitur scan barcode segera hadir',
+                                  ),
                                   backgroundColor: AppColors.accent,
                                   behavior: SnackBarBehavior.floating,
                                   duration: Duration(seconds: 2),
                                 ),
                               );
                             },
-                            child: const Icon(Icons.qr_code_scanner,
-                                color: AppColors.muted, size: 18),
+                            child: const Icon(
+                              Icons.qr_code_scanner,
+                              color: AppColors.muted,
+                              size: 18,
+                            ),
                           ),
                         ],
                       ),
@@ -242,8 +244,11 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.notifications_none,
-                color: AppColors.ink, size: 22),
+            icon: const Icon(
+              Icons.notifications_none,
+              color: AppColors.ink,
+              size: 22,
+            ),
           ),
           AnimatedBuilder(
             animation: BudgetRepository.instance,
@@ -258,8 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (_) => const BudgetScreen()),
+                        MaterialPageRoute(builder: (_) => const BudgetScreen()),
                       );
                     },
                     icon: const Icon(
@@ -296,12 +300,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (_) => const SavedScreen()),
+                        MaterialPageRoute(builder: (_) => const SavedScreen()),
                       );
                     },
-                    icon: const Icon(Icons.bookmark_border,
-                        color: AppColors.ink, size: 22),
+                    icon: const Icon(
+                      Icons.bookmark_border,
+                      color: AppColors.ink,
+                      size: 22,
+                    ),
                   ),
                   if (count > 0)
                     Positioned(
@@ -309,7 +315,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       right: 6,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 1),
+                          horizontal: 5,
+                          vertical: 1,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.accent2,
                           borderRadius: BorderRadius.circular(10),
@@ -332,8 +340,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             onPressed: () => setState(() => _currentIndex = 2),
-            icon: const Icon(Icons.shopping_bag_outlined,
-                color: AppColors.ink, size: 22),
+            icon: const Icon(
+              Icons.shopping_bag_outlined,
+              color: AppColors.ink,
+              size: 22,
+            ),
           ),
         ],
       );
@@ -368,13 +379,19 @@ class _HomeScreenState extends State<HomeScreen> {
       actions: [
         IconButton(
           onPressed: () {},
-          icon: const Icon(Icons.notifications_none,
-              color: AppColors.ink, size: 22),
+          icon: const Icon(
+            Icons.notifications_none,
+            color: AppColors.ink,
+            size: 22,
+          ),
         ),
         IconButton(
           onPressed: () => setState(() => _currentIndex = 2),
-          icon: const Icon(Icons.shopping_bag_outlined,
-              color: AppColors.ink, size: 22),
+          icon: const Icon(
+            Icons.shopping_bag_outlined,
+            color: AppColors.ink,
+            size: 22,
+          ),
         ),
       ],
     );
@@ -382,7 +399,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: !_showSearch,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _closeSearch();
+      },
+      child: Scaffold(
       backgroundColor: AppColors.bg,
       appBar: _buildAppBar(),
       body: _buildBody(),
@@ -404,7 +426,6 @@ class _HomeScreenState extends State<HomeScreen> {
               onTabChange: (index) => setState(() {
                 _currentIndex = index;
                 _showSearch = false;
-                _pendingPromoScroll = null;
               }),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               duration: const Duration(milliseconds: 300),
@@ -420,6 +441,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }
@@ -461,13 +483,18 @@ class _HomeScreenState extends State<HomeScreen> {
           return Center(child: Text('Gagal memuat: ${snapshot.error}'));
         }
 
-        final allProducts = snapshot.data ?? [];
-        final sorted = List<Product>.from(allProducts)
-          ..sort((a, b) =>
-              b.discountPercentage.compareTo(a.discountPercentage));
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _scrollToPendingPromoSection();
+        });
 
-        final discounted =
-            sorted.where((p) => p.discountPercentage > 0).toList();
+        final allProducts = snapshot.data ?? [];
+        final sorted = List<Product>.from(
+          allProducts,
+        )..sort((a, b) => b.discountPercentage.compareTo(a.discountPercentage));
+
+        final discounted = sorted
+            .where((p) => p.discountPercentage > 0)
+            .toList();
 
         final total = discounted.length;
         final chunk = (total / 3).ceil();
@@ -497,7 +524,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.accent2.withValues(alpha: 0.25),
                           borderRadius: BorderRadius.circular(20),
@@ -537,42 +566,36 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 28),
               if (flashSale.isNotEmpty)
-                Container(
-                  key: _sectionKeys[0],
-                  child: _promoSection(
-                    title: 'Flash Sale',
-                    subtitle:
-                        'Diskon ${flashSale.last.discountPercentage.round()}% - '
-                        '${flashSale.first.discountPercentage.round()}%',
-                    icon: Icons.bolt,
-                    products: flashSale,
-                  ),
+                _promoSection(
+                  sectionKey: _promoSectionKeys[0],
+                  title: 'Flash Sale',
+                  subtitle:
+                      'Diskon ${flashSale.last.discountPercentage.round()}% - '
+                      '${flashSale.first.discountPercentage.round()}%',
+                  icon: Icons.bolt,
+                  products: flashSale,
                 ),
               if (diskonSpesial.isNotEmpty)
-                Container(
-                  key: _sectionKeys[1],
-                  child: _promoSection(
-                    title: 'Diskon Spesial',
-                    subtitle:
-                        'Diskon ${diskonSpesial.last.discountPercentage.round()}% - '
-                        '${diskonSpesial.first.discountPercentage.round()}%',
-                    icon: Icons.local_offer_outlined,
-                    products: diskonSpesial,
-                  ),
+                _promoSection(
+                  sectionKey: _promoSectionKeys[1],
+                  title: 'Diskon Spesial',
+                  subtitle:
+                      'Diskon ${diskonSpesial.last.discountPercentage.round()}% - '
+                      '${diskonSpesial.first.discountPercentage.round()}%',
+                  icon: Icons.local_offer_outlined,
+                  products: diskonSpesial,
                 ),
               if (hemat.isNotEmpty)
-                Container(
-                  key: _sectionKeys[2],
-                  child: _promoSection(
-                    title: 'Hemat',
-                    subtitle:
-                        'Diskon ${hemat.last.discountPercentage.round()}% - '
-                        '${hemat.first.discountPercentage.round()}%',
-                    icon: Icons.savings_outlined,
-                    products: hemat,
-                  ),
+                _promoSection(
+                  sectionKey: _promoSectionKeys[2],
+                  title: 'Hemat',
+                  subtitle:
+                      'Diskon ${hemat.last.discountPercentage.round()}% - '
+                      '${hemat.first.discountPercentage.round()}%',
+                  icon: Icons.savings_outlined,
+                  products: hemat,
                 ),
-              const SizedBox(height: 32),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.3),
             ],
           ),
         );
@@ -581,12 +604,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _promoSection({
+    required GlobalKey sectionKey,
     required String title,
     required String subtitle,
     required IconData icon,
     required List<Product> products,
   }) {
     return Column(
+      key: sectionKey,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
@@ -628,10 +653,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               Text(
                 '${products.length} produk',
-                style: const TextStyle(
-                  fontSize: 11.5,
-                  color: AppColors.muted,
-                ),
+                style: const TextStyle(fontSize: 11.5, color: AppColors.muted),
               ),
             ],
           ),
@@ -650,9 +672,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 160,
                 child: Stack(
                   clipBehavior: Clip.hardEdge,
-                  children: [
-                    Positioned.fill(child: ProductCard(product: p)),
-                  ],
+                  children: [Positioned.fill(child: ProductCard(product: p))],
                 ),
               );
             },
@@ -680,8 +700,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (_) => const BudgetScreen()),
+                    MaterialPageRoute(builder: (_) => const BudgetScreen()),
                   );
                 },
                 child: Container(
@@ -729,8 +748,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ),
-                      const Icon(Icons.arrow_forward_ios,
-                          color: AppColors.muted, size: 13),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        color: AppColors.muted,
+                        size: 13,
+                      ),
                     ],
                   ),
                 ),
@@ -775,7 +797,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
@@ -807,7 +831,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         Text(
-                          'Rp${_fmtShort(repo.totalSaved)}',
+                          'Rp${_fmtShort(repo.totalSpent)}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 22,
@@ -831,8 +855,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: LinearProgressIndicator(
                         value: progress.clamp(0.0, 1.0),
                         minHeight: 6,
-                        backgroundColor:
-                            Colors.white.withValues(alpha: 0.15),
+                        backgroundColor: Colors.white.withValues(alpha: 0.15),
                         valueColor: AlwaysStoppedAnimation(progressColor),
                       ),
                     ),
@@ -851,15 +874,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(width: 6),
                         Text(
                           isOver
-                              ? 'Over budget Rp${_fmtShort(repo.totalSaved - repo.budget!.limit)}'
+                              ? 'Over budget Rp${_fmtShort(repo.totalSpent - repo.budget!.limit)}'
                               : 'Sisa Rp${_fmtShort(repo.remaining)}',
                           style: TextStyle(
                             color: isOver
                                 ? AppColors.danger
                                 : Colors.white.withValues(alpha: 0.6),
                             fontSize: 11.5,
-                            fontWeight:
-                                isOver ? FontWeight.w600 : FontWeight.w400,
+                            fontWeight: isOver
+                                ? FontWeight.w600
+                                : FontWeight.w400,
                           ),
                         ),
                       ],
@@ -882,8 +906,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final shouldShuffle = sinceLast.inSeconds >= 5;
 
-    final newProducts =
-        await ProductRepository.instance.all(refresh: true);
+    final newProducts = await ProductRepository.instance.all(refresh: true);
 
     final finalProducts = shouldShuffle
         ? (List<Product>.from(newProducts)..shuffle())
@@ -980,8 +1003,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Text(
                                   banner['subtitle'],
                                   style: TextStyle(
-                                    color:
-                                        Colors.white.withValues(alpha: 0.65),
+                                    color: Colors.white.withValues(alpha: 0.65),
                                     fontSize: 12.5,
                                     height: 1.4,
                                   ),
@@ -992,8 +1014,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Text(
                                       'Lihat promo',
                                       style: TextStyle(
-                                        color:
-                                            Colors.white.withValues(alpha: 0.9),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.9,
+                                        ),
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -1174,8 +1197,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 16,
                     crossAxisSpacing: 16,
@@ -1218,8 +1240,9 @@ class _SavableProductWrapper extends StatelessWidget {
           child: AnimatedBuilder(
             animation: SavedFoldersRepository.instance,
             builder: (context, _) {
-              final isSaved =
-                  SavedFoldersRepository.instance.isSavedAnywhere(product.id);
+              final isSaved = SavedFoldersRepository.instance.isSavedAnywhere(
+                product.id,
+              );
               return GestureDetector(
                 onTap: () {
                   SaveToFolderSheet.show(context, product);

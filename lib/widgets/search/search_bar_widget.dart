@@ -23,8 +23,10 @@ class SearchBarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        GestureDetector(
-          onTap: () {
+        IconButton(
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+          onPressed: () {
             focusNode.unfocus();
             if (onBack != null) {
               onBack!();
@@ -32,13 +34,10 @@ class SearchBarWidget extends StatelessWidget {
               Navigator.pop(context);
             }
           },
-          child: const Padding(
-            padding: EdgeInsets.only(right: 12.0),
-            child: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: AppColors.ink,
-              size: 20,
-            ),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppColors.ink,
+            size: 20,
           ),
         ),
 

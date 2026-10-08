@@ -7,6 +7,8 @@ import '/screens/onboarding/onboarding_screen.dart';
 import 'login_page.dart';
 import 'core/theme.dart';
 import 'services/auth_store.dart';
+import 'services/budget_repository.dart';
+import 'services/saved_folders_repository.dart';
 import 'services/cart_store.dart';
 import 'services/order_store.dart';
 import 'services/product_repository.dart';
@@ -21,6 +23,8 @@ Future<void> main() async {
     AuthStore.instance.load(),
     CartStore.instance.load(),
     OrderStore.instance.load(),
+    BudgetRepository.instance.load(),
+    SavedFoldersRepository.instance.load(),
   ]);
 
   runApp(const MyApp());
@@ -32,7 +36,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final GoRouter router = GoRouter(
-      initialLocation: '/home',
+      initialLocation: '/',
       debugLogDiagnostics: true,
 
       routes: [
