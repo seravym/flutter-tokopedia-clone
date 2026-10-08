@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/order_store.dart';
 import '../../core/theme.dart';
 import 'tracking_order_page.dart';
+import 'order_detail_page.dart';
 
 class OrderHistoryPage extends StatefulWidget {
   const OrderHistoryPage({super.key});
@@ -195,20 +196,38 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
 
                               const SizedBox(height: 12),
 
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            TrackingOrderPage(order: order),
-                                      ),
-                                    );
-                                  },
-                                  child: const Text('Lacak Pesanan'),
-                                ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                OrderDetailPage(order: order),
+                                          ),
+                                        );
+                                      },
+                                      child: const Text('Lihat Detail'),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                TrackingOrderPage(order: order),
+                                          ),
+                                        );
+                                      },
+                                      child: const Text('Lacak Pesanan'),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
