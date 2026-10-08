@@ -37,7 +37,7 @@ class ProductCard extends StatelessWidget {
                 children: [
                   Container(
                     color: AppColors.mintSoft,
-                    child: NetImage(p.thumbnail, fit: BoxFit.cover),
+                    child: NetImage(p.images.isNotEmpty ? p.images.first : p.thumbnail, fit: BoxFit.cover),
                   ),
                   if (!p.inStock)
                     Container(
