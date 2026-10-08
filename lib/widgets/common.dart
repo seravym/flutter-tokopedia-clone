@@ -24,13 +24,7 @@ class TokoLogo extends StatelessWidget {
       decoration: BoxDecoration(
         color: light ? Colors.white : AppColors.green,
         borderRadius: BorderRadius.circular(size * 0.32),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        boxShadow: softShadow(0.12),
       ),
       child: Icon(
         Icons.shopping_bag_rounded,
@@ -82,8 +76,10 @@ class _ImgFallback extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         color: AppColors.mintSoft,
         alignment: Alignment.center,
-        child: const Icon(Icons.image_not_supported_outlined,
-            color: AppColors.sub),
+        child: const Icon(
+          Icons.image_not_supported_outlined,
+          color: AppColors.sub,
+        ),
       );
 }
 
@@ -119,7 +115,10 @@ class _SkeletonState extends State<Skeleton>
         height: widget.height,
         decoration: BoxDecoration(
           color: Color.lerp(
-              const Color(0xFFE9EFEB), const Color(0xFFF6F9F7), _c.value),
+            const Color(0xFFE9EFEB),
+            const Color(0xFFF6F9F7),
+            _c.value,
+          ),
           borderRadius: BorderRadius.circular(widget.radius),
         ),
       ),
@@ -264,8 +263,10 @@ class RatingRow extends StatelessWidget {
         children: [
           Icon(Icons.star_rounded, color: AppColors.star, size: size + 2),
           const SizedBox(width: 2),
-          Text(rating.toStringAsFixed(1),
-              style: T.s(size - 1, w: FontWeight.w700)),
+          Text(
+            rating.toStringAsFixed(1),
+            style: T.s(size - 1, w: FontWeight.w700),
+          ),
         ],
       );
 }
@@ -292,7 +293,11 @@ class Stars extends StatelessWidget {
 class ErrorState extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
-  const ErrorState({super.key, required this.message, required this.onRetry});
+  const ErrorState({
+    super.key,
+    required this.message,
+    required this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) => Center(
@@ -305,22 +310,27 @@ class ErrorState extends StatelessWidget {
                 width: 88,
                 height: 88,
                 decoration: const BoxDecoration(
-                    color: AppColors.peachSoft, shape: BoxShape.circle),
-                child: const Icon(Icons.wifi_off_rounded,
-                    size: 40, color: AppColors.peach),
+                  color: AppColors.peachSoft,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.wifi_off_rounded,
+                  size: 40,
+                  color: AppColors.peach,
+                ),
               ),
               const SizedBox(height: 20),
               Text('Yah, gagal memuat 😢', style: T.h3),
               const SizedBox(height: 6),
-              Text(message,
-                  textAlign: TextAlign.center, style: T.small),
+              Text(message, textAlign: TextAlign.center, style: T.small),
               const SizedBox(height: 20),
               SizedBox(
                 width: 180,
                 child: PrimaryButton(
-                    label: 'Coba lagi',
-                    icon: Icons.refresh_rounded,
-                    onPressed: onRetry),
+                  label: 'Coba lagi',
+                  icon: Icons.refresh_rounded,
+                  onPressed: onRetry,
+                ),
               ),
             ],
           ),
@@ -354,7 +364,9 @@ class EmptyState extends StatelessWidget {
                 width: 108,
                 height: 108,
                 decoration: const BoxDecoration(
-                    color: AppColors.mint, shape: BoxShape.circle),
+                  color: AppColors.mint,
+                  shape: BoxShape.circle,
+                ),
                 child: Icon(icon, size: 48, color: AppColors.green),
               ),
               const SizedBox(height: 22),
@@ -365,7 +377,10 @@ class EmptyState extends StatelessWidget {
                 const SizedBox(height: 22),
                 SizedBox(
                   width: 200,
-                  child: PrimaryButton(label: actionLabel!, onPressed: onAction),
+                  child: PrimaryButton(
+                    label: actionLabel!,
+                    onPressed: onAction,
+                  ),
                 ),
               ],
             ],
@@ -399,19 +414,29 @@ class CartIconButton extends StatelessWidget {
               Container(
                 width: 42,
                 height: 42,
-                decoration:
-                    BoxDecoration(color: background, shape: BoxShape.circle),
-                child: Icon(Icons.shopping_bag_outlined, color: color, size: 22),
+                decoration: BoxDecoration(
+                  color: background,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.shopping_bag_outlined,
+                  color: color,
+                  size: 22,
+                ),
               ),
               if (n > 0)
                 Positioned(
                   right: -2,
                   top: -2,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                    constraints:
-                        const BoxConstraints(minWidth: 18, minHeight: 18),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 2,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.peach,
                       borderRadius: BorderRadius.circular(10),
@@ -453,9 +478,11 @@ class QtyStepper extends StatelessWidget {
         child: SizedBox(
           width: 34,
           height: 34,
-          child: Icon(icon,
-              size: 18,
-              color: onTap == null ? AppColors.line : AppColors.green),
+          child: Icon(
+            icon,
+            size: 18,
+            color: onTap == null ? AppColors.line : AppColors.green,
+          ),
         ),
       );
 
@@ -470,13 +497,17 @@ class QtyStepper extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _btn(Icons.remove_rounded,
-              value > min ? () => onChanged(value - 1) : null),
+          _btn(
+            Icons.remove_rounded,
+            value > min ? () => onChanged(value - 1) : null,
+          ),
           SizedBox(
             width: 30,
-            child: Text('$value',
-                textAlign: TextAlign.center,
-                style: T.s(14, w: FontWeight.w800)),
+            child: Text(
+              '$value',
+              textAlign: TextAlign.center,
+              style: T.s(14, w: FontWeight.w800),
+            ),
           ),
           _btn(Icons.add_rounded, () {
             if (value < max) {
@@ -512,8 +543,10 @@ void toast(
           Icon(icon, color: AppColors.mint, size: 20),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(message,
-                style: T.s(13, w: FontWeight.w600, c: Colors.white)),
+            child: Text(
+              message,
+              style: T.s(13, w: FontWeight.w600, c: Colors.white),
+            ),
           ),
         ],
       ),

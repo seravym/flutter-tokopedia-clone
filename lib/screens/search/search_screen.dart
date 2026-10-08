@@ -8,8 +8,7 @@ import '../../services/app_nav.dart';
 import '../../widgets/search/search_bar_widget.dart';
 import '../../widgets/search/filter_chip_widget.dart';
 import '../../widgets/search/advanced_filter_bottom_sheet.dart';
-import '../../widgets/search/product_search_skeleton.dart'; 
-import '../../widgets/common.dart';
+import '../../widgets/search/product_search_skeleton.dart';
 import '../../widgets/common.dart';
 import '../../widgets/product_card.dart';
 
@@ -59,7 +58,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
     _searchFocusNode.addListener(() {
       setState(() {
-        _isSearching = _searchFocusNode.hasFocus;
         _isSearching = _searchFocusNode.hasFocus &&
             _searchQuery.isEmpty &&
             _selectedCategory == null;
@@ -89,6 +87,7 @@ class _SearchScreenState extends State<SearchScreen> {
     _handleSearchIntent();
     _applyFiltersAndSort();
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
   }
 
@@ -110,10 +109,9 @@ class _SearchScreenState extends State<SearchScreen> {
     if (cleanQuery.isEmpty) return;
 
     final prefs = await SharedPreferences.getInstance();
-    _searchHistory.removeWhere((item) => item.toLowerCase() == cleanQuery.toLowerCase());
-
-    _searchHistory
-        .removeWhere((item) => item.toLowerCase() == cleanQuery.toLowerCase());
+    _searchHistory.removeWhere(
+      (item) => item.toLowerCase() == cleanQuery.toLowerCase(),
+    );
     _searchHistory.insert(0, cleanQuery);
 
     if (_searchHistory.length > 10) {
@@ -121,12 +119,13 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     await prefs.setStringList(_historyPrefKey, _searchHistory);
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   Future<void> _clearHistory() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_historyPrefKey);
+    if (!mounted) return;
     setState(() => _searchHistory.clear());
   }
 
@@ -159,20 +158,21 @@ class _SearchScreenState extends State<SearchScreen> {
     _searchQuery = query;
     _searchFocusNode.unfocus();
     _saveToHistory(query);
-    setState(() {
-      _isLoading = true;
-    });
-    
+    setState(() => _isLoading = true);
+
     Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
       _applyFiltersAndSort();
       setState(() => _isLoading = false);
     });
   }
 
   void _applyFiltersAndSort() {
-    var result = _allProducts.where((p) {
-      final queryLower = _searchQuery.toLowerCase();
-      final matchesQuery = p.title.toLowerCase().contains(queryLower) ||
+    final queryLower = _searchQuery.toLowerCase();
+
+    final result = _allProducts.where((p) {
+      final matchesQuery = queryLower.isEmpty ||
+          p.title.toLowerCase().contains(queryLower) ||
           (p.brand?.toLowerCase().contains(queryLower) ?? false) ||
           p.tags.any((tag) => tag.toLowerCase().contains(queryLower));
 
@@ -202,13 +202,12 @@ class _SearchScreenState extends State<SearchScreen> {
         result.sort((a, b) => b.rating.compareTo(a.rating));
         break;
       case SortOption.defaultSort:
-      default:
         break;
     }
 
+    if (!mounted) return;
     setState(() {
       _filteredProducts = result;
-      _isSearching = _searchFocusNode.hasFocus;
       _isSearching = _searchFocusNode.hasFocus &&
           _searchQuery.isEmpty &&
           _selectedCategory == null;
@@ -247,15 +246,17 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildSearchSuggestions() {
     if (_searchQuery.isEmpty) {
-      return _buildSearchHistory(); 
+      return _buildSearchHistory();
     }
 
     final queryLower = _searchQuery.toLowerCase();
     final suggestions = <String>{};
-    
+
     for (final p in _allProducts) {
       if (p.title.toLowerCase().contains(queryLower)) suggestions.add(p.title);
-      if (p.brand != null && p.brand!.toLowerCase().contains(queryLower)) suggestions.add(p.brand!);
+      if (p.brand != null && p.brand!.toLowerCase().contains(queryLower)) {
+        suggestions.add(p.brand!);
+      }
       for (final tag in p.tags) {
         if (tag.toLowerCase().contains(queryLower)) suggestions.add(tag);
       }
@@ -273,16 +274,25 @@ class _SearchScreenState extends State<SearchScreen> {
 
     return ListView(
       padding: const EdgeInsets.all(16),
-      children: suggestions.map((s) => ListTile(
-        contentPadding: EdgeInsets.zero,
-        leading: const Icon(Icons.search_rounded, color: AppColors.sub),
-        title: Text(s, style: T.body),
-        trailing: const Icon(Icons.north_west_rounded, size: 16, color: AppColors.sub),
-        onTap: () {
-          _searchController.text = s;
-          _executeSearch(s);
-        },
-      )).toList(),
+      children: suggestions
+          .map(
+            (s) => ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading:
+                  const Icon(Icons.search_rounded, color: AppColors.sub),
+              title: Text(s, style: T.body),
+              trailing: const Icon(
+                Icons.north_west_rounded,
+                size: 16,
+                color: AppColors.sub,
+              ),
+              onTap: () {
+                _searchController.text = s;
+                _executeSearch(s);
+              },
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -293,10 +303,12 @@ class _SearchScreenState extends State<SearchScreen> {
           padding: const EdgeInsets.only(top: 100),
           child: Column(
             children: [
-              Icon(Icons.history_rounded, size: 60, color: AppColors.line),
+              const Icon(Icons.history_rounded, size: 60, color: AppColors.line),
               const SizedBox(height: 16),
-              Text("Belum ada riwayat pencarian",
-                  style: T.s(14, c: AppColors.sub)),
+              Text(
+                "Belum ada riwayat pencarian",
+                style: T.s(14, c: AppColors.sub),
+              ),
             ],
           ),
         ),
@@ -312,23 +324,30 @@ class _SearchScreenState extends State<SearchScreen> {
             Text("Pencarian Terakhir", style: T.h3),
             TextButton(
               onPressed: _clearHistory,
-              child: Text("Hapus Semua",
-                  style: T.s(13, w: FontWeight.w700, c: AppColors.peach)),
+              child: Text(
+                "Hapus Semua",
+                style: T.s(13, w: FontWeight.w700, c: AppColors.peach),
+              ),
             ),
           ],
         ),
-        ..._searchHistory.map((query) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading:
-                  const Icon(Icons.history_rounded, color: AppColors.sub),
-              title: Text(query, style: T.body),
-              trailing: const Icon(Icons.north_west_rounded,
-                  size: 16, color: AppColors.sub),
-              onTap: () {
-                _searchController.text = query;
-                _executeSearch(query);
-              },
-            )),
+        ..._searchHistory.map(
+          (query) => ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading:
+                const Icon(Icons.history_rounded, color: AppColors.sub),
+            title: Text(query, style: T.body),
+            trailing: const Icon(
+              Icons.north_west_rounded,
+              size: 16,
+              color: AppColors.sub,
+            ),
+            onTap: () {
+              _searchController.text = query;
+              _executeSearch(query);
+            },
+          ),
+        ),
       ],
     );
   }
@@ -340,6 +359,7 @@ class _SearchScreenState extends State<SearchScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            // === Search bar header ===
             Container(
               color: Colors.white,
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -352,12 +372,15 @@ class _SearchScreenState extends State<SearchScreen> {
                     onSubmitted: _executeSearch,
                     onChanged: (val) {
                       setState(() => _searchQuery = val);
+                      if (val.isNotEmpty) _applyFiltersAndSort();
                     },
                     onClear: () {
                       _searchController.clear();
                       setState(() => _searchQuery = '');
                       _searchFocusNode.requestFocus();
+                      _applyFiltersAndSort();
                     },
+                    onBack: widget.onClose,
                   ),
                   if (_isSearching && _searchQuery.isEmpty)
                     Padding(
@@ -366,300 +389,208 @@ class _SearchScreenState extends State<SearchScreen> {
                         scrollDirection: Axis.horizontal,
                         child: Row(
                           children: [
-                            'Kemeja Pria', 'Sepatu Wanita', 'Laptop', 'Skincare'
-                          ].map((tag) => Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ActionChip(
-                              label: Text(tag, style: T.s(12, c: AppColors.sub)),
-                              backgroundColor: AppColors.bg,
-                              side: BorderSide.none,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                              onPressed: () {
-                                _searchController.text = tag;
-                                _executeSearch(tag);
-                              },
-                            ),
-                          )).toList(),
+                            'Kemeja Pria',
+                            'Sepatu Wanita',
+                            'Laptop',
+                            'Skincare',
+                          ]
+                              .map(
+                                (tag) => Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: ActionChip(
+                                    label: Text(
+                                      tag,
+                                      style: T.s(12, c: AppColors.sub),
+                                    ),
+                                    backgroundColor: AppColors.bg,
+                                    side: BorderSide.none,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                    onPressed: () {
+                                      _searchController.text = tag;
+                                      _executeSearch(tag);
+                                    },
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ),
                     ),
                 ],
               ),
             ),
-            
+
+            // === Body ===
             Expanded(
               child: _isSearching
-                ? _buildSearchSuggestions() 
-                : CustomScrollView(
-                    slivers: [
-                      SliverAppBar(
-                        backgroundColor: Colors.white,
-                        automaticallyImplyLeading: false,
-                        pinned: true,
-                        elevation: 1,
-                        shadowColor: Colors.black.withValues(alpha: 0.1),
-                        toolbarHeight: 65,
-                        flexibleSpace: FlexibleSpaceBar(
-                          background: _buildFilterPanel(),
-                        ),
-                      ),
-                      
-                      if (!_isLoading)
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "Menampilkan ${_filteredProducts.length} produk",
-                                  style: T.s(13, c: AppColors.sub, w: FontWeight.w600),
-                                ),
-                                if (_currentSort != SortOption.defaultSort)
-                                  Text(
-                                    "Diurutkan",
-                                    style: T.s(12, c: AppColors.green, w: FontWeight.w700),
-                                  )
-                              ],
-                            ),
+                  ? _buildSearchSuggestions()
+                  : CustomScrollView(
+                      slivers: [
+                        SliverAppBar(
+                          backgroundColor: Colors.white,
+                          automaticallyImplyLeading: false,
+                          pinned: true,
+                          elevation: 1,
+                          shadowColor: Colors.black.withValues(alpha: 0.1),
+                          toolbarHeight: 65,
+                          flexibleSpace: FlexibleSpaceBar(
+                            background: _buildFilterPanel(),
                           ),
                         ),
 
-                      if (_isLoading)
-                        const ProductSearchSkeleton()
-                      else if (_filteredProducts.isEmpty)
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 60),
-                            child: EmptyState(
-                              icon: Icons.search_off_rounded,
-                              title: 'Oops, produk tidak ditemukan',
-                              subtitle: 'Coba kurangi filter atau gunakan kata kunci yang lebih umum.',
-                              actionLabel: 'Hapus Semua Filter',
-                              onAction: () {
-                                setState(() {
-                                  _searchController.clear();
-                                  _searchQuery = '';
-                                  _selectedCategory = null;
-                                  _minPrice = null;
-                                  _maxPrice = null;
-                                  _fastShippingOnly = false;
-                                  _minRating = 0;
-                                  _currentSort = SortOption.defaultSort;
-                                });
-                                _applyFiltersAndSort();
-                              },
+                        if (!_isLoading)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Menampilkan ${_filteredProducts.length} produk",
+                                    style: T.s(
+                                      13,
+                                      c: AppColors.sub,
+                                      w: FontWeight.w600,
+                                    ),
+                                  ),
+                                  if (_currentSort != SortOption.defaultSort)
+                                    Text(
+                                      "Diurutkan",
+                                      style: T.s(
+                                        12,
+                                        c: AppColors.green,
+                                        w: FontWeight.w700,
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ),
                           ),
-                        )
-                      else
-                        ProductSearchGrid(products: _filteredProducts),
-                        
-                      const SliverToBoxAdapter(child: SizedBox(height: 100)),
-                    ],
-                  ),
+
+                        if (_isLoading)
+                          const ProductSearchSkeleton()
+                        else if (_filteredProducts.isEmpty)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 60),
+                              child: EmptyState(
+                                icon: Icons.search_off_rounded,
+                                title: 'Oops, produk tidak ditemukan',
+                                subtitle:
+                                    'Coba kurangi filter atau gunakan kata kunci yang lebih umum.',
+                                actionLabel: 'Hapus Semua Filter',
+                                onAction: _resetFilters,
+                              ),
+                            ),
+                          )
+                        else
+                          ProductSearchGrid(products: _filteredProducts),
+
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: 100),
+                        ),
+                      ],
+                    ),
             ),
           ],
         ),
-    return Container(
-      color: AppColors.bg,
-      child: Column(
-        children: [
-          Container(
-            color: Colors.white,
-            padding: EdgeInsets.fromLTRB(
-                16, 12 + MediaQuery.of(context).padding.top, 16, 12),
-            child: SearchBarWidget(
-              controller: _searchController,
-              focusNode: _searchFocusNode,
-              onSubmitted: _executeSearch,
-              onChanged: (val) {
-                setState(() {
-                  _searchQuery = val;
-                  _isSearching = val.isEmpty &&
-                      _searchFocusNode.hasFocus &&
-                      _selectedCategory == null;
-                });
-                if (val.isNotEmpty) _applyFiltersAndSort();
-              },
-              onClear: () {
-                _searchController.clear();
-                setState(() {
-                  _searchQuery = '';
-                  _isSearching = _searchFocusNode.hasFocus &&
-                      _selectedCategory == null;
-                });
-                _applyFiltersAndSort();
-              },
-              onBack: widget.onClose,
-            ),
-          ),
-          Expanded(
-            child: _isLoading
-                ? const Center(
-                    child:
-                        CircularProgressIndicator(color: AppColors.green))
-                : _shouldShowHistory
-                    ? _buildSearchHistory()
-                    : Column(
-                        children: [
-                          Container(
-                            color: Colors.white,
-                            padding:
-                                const EdgeInsets.fromLTRB(16, 4, 16, 12),
-                            child: _buildFilterPanel(),
-                          ),
-                          Expanded(
-                            child: _filteredProducts.isEmpty
-                                ? EmptyState(
-                                    icon: Icons.search_off_rounded,
-                                    title: 'Oops, produk tidak ditemukan',
-                                    subtitle:
-                                        'Coba kurangi filter atau gunakan kata kunci yang lebih umum.',
-                                    actionLabel: 'Hapus Semua Filter',
-                                    onAction: () {
-                                      setState(() {
-                                        _searchController.clear();
-                                        _searchQuery = '';
-                                        _selectedCategory = null;
-                                        _minPrice = null;
-                                        _maxPrice = null;
-                                        _fastShippingOnly = false;
-                                        _minRating = 0;
-                                        _currentSort =
-                                            SortOption.defaultSort;
-                                      });
-                                      _applyFiltersAndSort();
-                                    },
-                                  )
-                                : Column(
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            16, 12, 16, 4),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              "Menampilkan ${_filteredProducts.length} produk",
-                                              style: T.s(13,
-                                                  c: AppColors.sub,
-                                                  w: FontWeight.w600),
-                                            ),
-                                            if (_currentSort !=
-                                                SortOption.defaultSort)
-                                              Text(
-                                                "Diurutkan",
-                                                style: T.s(12,
-                                                    c: AppColors.green,
-                                                    w: FontWeight.w700),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: GridView.builder(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              16, 8, 16, 100),
-                                          gridDelegate:
-                                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: 2,
-                                            mainAxisSpacing: 14,
-                                            crossAxisSpacing: 14,
-                                            mainAxisExtent: 310,
-                                          ),
-                                          itemCount:
-                                              _filteredProducts.length,
-                                          itemBuilder: (context, index) {
-                                            return ProductCard(
-                                              product:
-                                                  _filteredProducts[index],
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                          ),
-                        ],
-                      ),
-          ),
-        ],
       ),
     );
+  }
+
+  void _resetFilters() {
+    setState(() {
+      _searchController.clear();
+      _searchQuery = '';
+      _selectedCategory = null;
+      _minPrice = null;
+      _maxPrice = null;
+      _fastShippingOnly = false;
+      _minRating = 0;
+      _currentSort = SortOption.defaultSort;
+    });
+    _applyFiltersAndSort();
   }
 
   Widget _buildFilterPanel() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          Builder(builder: (context) {
-            final isActive = _minPrice != null ||
-                _maxPrice != null ||
-                _fastShippingOnly ||
-                _minRating > 0 ||
-                _currentSort != SortOption.defaultSort;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: IconButton(
-                onPressed: _showAdvancedFilter,
-                icon: Icon(
-                  Icons.tune_rounded,
-                  color: isActive ? Colors.white : AppColors.ink,
-                  size: 20,
-                ),
-                style: IconButton.styleFrom(
-                  backgroundColor:
-                      isActive ? AppColors.green : AppColors.bg,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: isActive ? AppColors.green : AppColors.line,
+          // Tombol filter lanjutan
+          Builder(
+            builder: (context) {
+              final isActive = _minPrice != null ||
+                  _maxPrice != null ||
+                  _fastShippingOnly ||
+                  _minRating > 0 ||
+                  _currentSort != SortOption.defaultSort;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: IconButton(
+                  onPressed: _showAdvancedFilter,
+                  icon: Icon(
+                    Icons.tune_rounded,
+                    color: isActive ? Colors.white : AppColors.ink,
+                    size: 20,
+                  ),
+                  style: IconButton.styleFrom(
+                    backgroundColor:
+                        isActive ? AppColors.green : AppColors.bg,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: isActive ? AppColors.green : AppColors.line,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          }),
-          FilterChipWidget(
-            label: "Semua",
-            isSelected: _selectedCategory == null,
-            onTap: () {
-              _selectedCategory = null;
-              _applyFiltersAndSort();
+              );
             },
           ),
+
+          // Chip "Semua"
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChipWidget(
+              label: "Semua",
+              isSelected: _selectedCategory == null,
+              onTap: () {
+                setState(() => _selectedCategory = null);
+                _applyFiltersAndSort();
+              },
+            ),
+          ),
+
+          // Chip kategori
           ..._categories.map((cat) {
             final formattedCat = cat
                 .split('-')
-                .map((w) =>
-                    w.isNotEmpty ? w[0].toUpperCase() + w.substring(1) : w)
+                .map(
+                  (w) => w.isNotEmpty
+                      ? w[0].toUpperCase() + w.substring(1)
+                      : w,
+                )
                 .join(' ');
-            return FilterChipWidget(
-              label: formattedCat,
-              isSelected: _selectedCategory == cat,
-              onTap: () {
-                _selectedCategory = null;
-                _executeSearch(_searchQuery); 
-              },
-            );
-          }
-          final cat = _categories[index - 2];
-          final formattedCat = cat.split('-').map((w) => w.isNotEmpty ? w[0].toUpperCase() + w.substring(1) : w).join(' ');
-          return FilterChipWidget(
-            label: formattedCat,
-            isSelected: _selectedCategory == cat,
-            onTap: () {
-              _selectedCategory = cat;
-              _executeSearch(_searchQuery); 
-            },
-          );
-        },
-                _selectedCategory = cat;
-                _applyFiltersAndSort();
-              },
+
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: FilterChipWidget(
+                label: formattedCat,
+                isSelected: _selectedCategory == cat,
+                onTap: () {
+                  setState(() {
+                    _selectedCategory =
+                        _selectedCategory == cat ? null : cat;
+                  });
+                  _applyFiltersAndSort();
+                },
+              ),
             );
           }),
         ],
