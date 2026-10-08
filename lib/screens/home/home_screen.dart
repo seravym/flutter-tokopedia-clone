@@ -9,6 +9,11 @@ import '../../core/app_colors.dart';
 import '../../core/format.dart';
 import '../../models/product.dart';
 import '../../services/product_repository.dart';
+import '../../services/app_nav.dart'; 
+import '../../widgets/product_card.dart'; 
+import '../search/search_screen.dart';
+import '../cart/cart_page.dart'; 
+import '../wishlist/wishlist_page.dart';
 import '../../services/saved_folders_repository.dart';
 import '../../services/budget_repository.dart';
 import '../../services/app_nav.dart';
@@ -85,6 +90,49 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _productsFuture = ProductRepository.instance.all();
+    
+    AppNav.tab.addListener(_onTabChanged);
+  }
+
+  @override
+  void dispose() {
+    AppNav.tab.removeListener(_onTabChanged);
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (mounted) {
+      setState(() {
+        _currentIndex = AppNav.tab.value;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: _bodyColor,
+      appBar: AppBar(
+        backgroundColor: _appBarColor,
+        elevation: 1,
+        title: GestureDetector(
+          onTap: () => AppNav.openSearch(),
+          child: Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Row(
+              children: [
+                SizedBox(width: 12),
+                Icon(Icons.search, color: Colors.grey),
+                SizedBox(width: 8),
+                Text('Cari di Tokopedia',
+                    style: TextStyle(color: Colors.grey, fontSize: 14)),
+              ],
+            ),
+          ),
 
     _autoScrollTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (_bannerController.hasClients) {
@@ -243,6 +291,15 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const WishlistPage()),
+              );
+            },
+            icon: const Icon(Icons.favorite_border_rounded, color: Colors.black),
+          ),
+          IconButton(
             onPressed: () {},
             icon: const Icon(
               Icons.notifications_none,
@@ -339,6 +396,8 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           IconButton(
+            onPressed: () => AppNav.tab.value = 1,
+            icon: const Icon(Icons.shopping_cart_outlined, color: Colors.black),
             onPressed: () => setState(() => _currentIndex = 2),
             icon: const Icon(
               Icons.shopping_bag_outlined,
@@ -409,6 +468,25 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: _buildAppBar(),
       body: _buildBody(),
       bottomNavigationBar: Container(
+        color: _accentColor,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 20.0),
+          child: GNav(
+            backgroundColor: _accentColor,
+            color: Colors.grey,
+            activeColor: Colors.white,
+            tabBackgroundColor: Colors.grey.shade800,
+            gap: 8,
+            selectedIndex: _currentIndex,
+            onTabChange: (index) => AppNav.tab.value = index,
+            padding: const EdgeInsets.all(16),
+            tabs: const [
+              GButton(icon: Icons.home, text: 'Home'),
+              GButton(icon: Icons.shopping_cart, text: 'Cart'),
+              GButton(icon: Icons.search, text: 'Search'),
+              GButton(icon: Icons.settings, text: 'Settings'),
+              GButton(icon: Icons.account_circle_rounded, text: 'Account'),
+            ],
         color: AppColors.accent,
         child: SafeArea(
           top: false,
@@ -455,6 +533,11 @@ class _HomeScreenState extends State<HomeScreen> {
       case 0:
         return _buildHomeContent();
       case 1:
+        return const CartPage(); 
+      case 2:
+        return const SearchScreen();
+      default:
+        return const Center(child: Text('Halaman Segera Hadir'));
         return _buildPromoContent();
       case 2:
         return const CartPage(embedded: true);
@@ -958,6 +1041,13 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Container(
+              margin: const EdgeInsets.all(16),
+              height: 120,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: _accentColor,
+                borderRadius: BorderRadius.circular(12),
             const SizedBox(height: 8),
             SizedBox(
               height: 170,
@@ -1078,6 +1168,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
+
+
             const SizedBox(height: 24),
             _buildBudgetWidget(),
             const SizedBox(height: 24),
@@ -1102,6 +1194,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: categories.length,
                 itemBuilder: (context, index) {
                   final cat = categories[index];
+                  return GestureDetector(
+                    onTap: () {
+                      AppNav.openSearch(query: cat['name']);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 20.0),
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Colors.grey[200],
+                            child: Icon(cat['icon'],
+                                color: _accentColor, size: 28),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(cat['name'], style: const TextStyle(fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
+
                   return Padding(
                     padding: const EdgeInsets.only(right: 20),
                     child: GestureDetector(
@@ -1151,6 +1268,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 12),
+
             const SizedBox(height: 14),
             FutureBuilder<List<Product>>(
               future: _productsFuture,

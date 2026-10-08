@@ -13,6 +13,7 @@ import 'services/cart_store.dart';
 import 'services/order_store.dart';
 import 'services/product_repository.dart';
 import 'screens/product/product_detail_page.dart';
+import 'services/wishlist_store.dart';
 import 'pages/otp_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/signUp_page.dart';
@@ -23,6 +24,7 @@ Future<void> main() async {
     AuthStore.instance.load(),
     CartStore.instance.load(),
     OrderStore.instance.load(),
+    WishlistStore.instance.load(),
     BudgetRepository.instance.load(),
     SavedFoldersRepository.instance.load(),
   ]);
@@ -40,32 +42,24 @@ class MyApp extends StatelessWidget {
       debugLogDiagnostics: true,
 
       routes: [
-        // 1. Splash Screen
         GoRoute(path: '/', builder: (context, state) => const LoadingPage()),
-
-        // 2. Onboarding Screen
+        GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+        GoRoute(path: '/', builder: (context, state) => const LoadingPage()),
         GoRoute(
           path: '/onboarding',
           builder: (context, state) => const OnboardingScreen(),
         ),
-        // 3. Login Page
         GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
 
         GoRoute(
           path: '/signup',
           builder: (context, state) => const SignUpPage(),
         ),
-
-        // 4. OTP
         GoRoute(path: '/otp', builder: (context, state) => const OtpPage()),
-
-        // 5. Profile
         GoRoute(
           path: '/profile',
           builder: (context, state) => const ProfilePage(),
         ),
-
-        // 6. Home Screen
         GoRoute(
           path: '/home',
           pageBuilder: (context, state) => CustomTransitionPage(
