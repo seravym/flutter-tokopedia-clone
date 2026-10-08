@@ -109,7 +109,7 @@ class BudgetScreen extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Rp${_formatNumber(repo.totalSaved)}',
+                'Rp${_formatNumber(repo.totalSpent)}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 28,
@@ -193,7 +193,7 @@ class BudgetScreen extends StatelessWidget {
                 Expanded(
                   child: Text(
                     isOver
-                        ? 'Kamu sudah melebihi budget sebesar Rp${_formatNumber(repo.totalSaved - repo.budget!.limit)}'
+                        ? 'Kamu sudah melebihi budget sebesar Rp${_formatNumber(repo.totalSpent - repo.budget!.limit)}'
                         : 'Kamu sudah memakai ${(progress * 100).toStringAsFixed(0)}% dari budget',
                     style: TextStyle(
                       color: isOver
@@ -225,14 +225,14 @@ class BudgetScreen extends StatelessWidget {
 
         _infoTile(
           icon: Icons.bookmarks_outlined,
-          label: 'Produk disimpan',
-          value: '${repo.totalSavedCount} item',
+          label: 'Barang dibeli',
+          value: '${repo.spentCount} item',
         ),
         const SizedBox(height: 8),
         _infoTile(
           icon: Icons.shopping_bag_outlined,
-          label: 'Total nilai',
-          value: 'Rp${_formatNumber(repo.totalSaved)}',
+          label: 'Total belanja',
+          value: 'Rp${_formatNumber(repo.totalSpent)}',
         ),
         const SizedBox(height: 8),
         _infoTile(
@@ -589,7 +589,7 @@ class BudgetScreen extends StatelessWidget {
           ),
         ),
         content: const Text(
-          'Budget akan dihapus. Produk yang disimpan tetap aman.',
+          'Budget akan dihapus. Riwayat pesananmu tetap aman.',
           style: TextStyle(
             color: AppColors.muted,
             fontSize: 13.5,

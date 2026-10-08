@@ -7,9 +7,9 @@ import '../../services/product_repository.dart';
 import '../../services/app_nav.dart';
 import '../../widgets/search/search_bar_widget.dart';
 import '../../widgets/search/filter_chip_widget.dart';
-import '../../widgets/search/product_search_grid.dart';
 import '../../widgets/search/advanced_filter_bottom_sheet.dart';
 import '../../widgets/common.dart';
+import '../../widgets/product_card.dart';
 
 enum SortOption { defaultSort, lowestPrice, highestPrice, topRating }
 
@@ -46,7 +46,9 @@ class _SearchScreenState extends State<SearchScreen> {
   static const String _historyPrefKey = 'tokopedia_search_history';
 
   bool get _shouldShowHistory =>
-      _isSearching && _searchQuery.isEmpty && _selectedCategory == null;
+      _isSearching &&
+      _searchQuery.isEmpty &&
+      _selectedCategory == null;
 
   @override
   void initState() {
@@ -146,7 +148,6 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     _searchFocusNode.unfocus();
-
     _applyFiltersAndSort();
     AppNav.searchIntent.value = null;
   }
@@ -281,138 +282,141 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bg,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              child: SearchBarWidget(
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                onSubmitted: _executeSearch,
-                onChanged: (val) {
-                  setState(() {
-                    _searchQuery = val;
-                    _isSearching = val.isEmpty &&
-                        _searchFocusNode.hasFocus &&
-                        _selectedCategory == null;
-                  });
-                  if (val.isNotEmpty) _applyFiltersAndSort();
-                },
-                onClear: () {
-                  _searchController.clear();
-                  setState(() {
-                    _searchQuery = '';
-                    _isSearching = _searchFocusNode.hasFocus &&
-                        _selectedCategory == null;
-                  });
-                  _applyFiltersAndSort();
-                },
-                onBack: widget.onClose,
-              ),
+    return Container(
+      color: AppColors.bg,
+      child: Column(
+        children: [
+          Container(
+            color: Colors.white,
+            padding: EdgeInsets.fromLTRB(
+                16, 12 + MediaQuery.of(context).padding.top, 16, 12),
+            child: SearchBarWidget(
+              controller: _searchController,
+              focusNode: _searchFocusNode,
+              onSubmitted: _executeSearch,
+              onChanged: (val) {
+                setState(() {
+                  _searchQuery = val;
+                  _isSearching = val.isEmpty &&
+                      _searchFocusNode.hasFocus &&
+                      _selectedCategory == null;
+                });
+                if (val.isNotEmpty) _applyFiltersAndSort();
+              },
+              onClear: () {
+                _searchController.clear();
+                setState(() {
+                  _searchQuery = '';
+                  _isSearching = _searchFocusNode.hasFocus &&
+                      _selectedCategory == null;
+                });
+                _applyFiltersAndSort();
+              },
+              onBack: widget.onClose,
             ),
-
-            Expanded(
-              child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                          color: AppColors.green))
-                  : _shouldShowHistory
-                      ? _buildSearchHistory()
-                      : CustomScrollView(
-                          slivers: [
-                            SliverAppBar(
-                              backgroundColor: Colors.white,
-                              automaticallyImplyLeading: false,
-                              pinned: true,
-                              elevation: 1,
-                              shadowColor: Colors.black.withValues(alpha: 0.1),
-                              toolbarHeight: 65,
-                              flexibleSpace: FlexibleSpaceBar(
-                                background: _buildFilterPanel(),
-                              ),
-                            ),
-
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "Menampilkan ${_filteredProducts.length} produk",
-                                      style: T.s(13,
-                                          c: AppColors.sub,
-                                          w: FontWeight.w600),
-                                    ),
-                                    if (_currentSort != SortOption.defaultSort)
-                                      Text(
-                                        "Diurutkan",
-                                        style: T.s(12,
-                                            c: AppColors.green,
-                                            w: FontWeight.w700),
-                                      )
-                                  ],
-                                ),
-                              ),
-                            ),
-
-                            SliverPadding(
-                              padding: const EdgeInsets.only(bottom: 100),
-                              sliver: _filteredProducts.isEmpty
-                                  ? SliverToBoxAdapter(
-                                      child: Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 60),
-                                        child: EmptyState(
-                                          icon: Icons.search_off_rounded,
-                                          title:
-                                              'Oops, produk tidak ditemukan',
-                                          subtitle:
-                                              'Coba kurangi filter atau gunakan kata kunci yang lebih umum.',
-                                          actionLabel: 'Hapus Semua Filter',
-                                          onAction: () {
-                                            setState(() {
-                                              _searchController.clear();
-                                              _searchQuery = '';
-                                              _selectedCategory = null;
-                                              _minPrice = null;
-                                              _maxPrice = null;
-                                              _fastShippingOnly = false;
-                                              _minRating = 0;
-                                              _currentSort =
-                                                  SortOption.defaultSort;
-                                            });
-                                            _applyFiltersAndSort();
+          ),
+          Expanded(
+            child: _isLoading
+                ? const Center(
+                    child:
+                        CircularProgressIndicator(color: AppColors.green))
+                : _shouldShowHistory
+                    ? _buildSearchHistory()
+                    : Column(
+                        children: [
+                          Container(
+                            color: Colors.white,
+                            padding:
+                                const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                            child: _buildFilterPanel(),
+                          ),
+                          Expanded(
+                            child: _filteredProducts.isEmpty
+                                ? EmptyState(
+                                    icon: Icons.search_off_rounded,
+                                    title: 'Oops, produk tidak ditemukan',
+                                    subtitle:
+                                        'Coba kurangi filter atau gunakan kata kunci yang lebih umum.',
+                                    actionLabel: 'Hapus Semua Filter',
+                                    onAction: () {
+                                      setState(() {
+                                        _searchController.clear();
+                                        _searchQuery = '';
+                                        _selectedCategory = null;
+                                        _minPrice = null;
+                                        _maxPrice = null;
+                                        _fastShippingOnly = false;
+                                        _minRating = 0;
+                                        _currentSort =
+                                            SortOption.defaultSort;
+                                      });
+                                      _applyFiltersAndSort();
+                                    },
+                                  )
+                                : Column(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            16, 12, 16, 4),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              "Menampilkan ${_filteredProducts.length} produk",
+                                              style: T.s(13,
+                                                  c: AppColors.sub,
+                                                  w: FontWeight.w600),
+                                            ),
+                                            if (_currentSort !=
+                                                SortOption.defaultSort)
+                                              Text(
+                                                "Diurutkan",
+                                                style: T.s(12,
+                                                    c: AppColors.green,
+                                                    w: FontWeight.w700),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: GridView.builder(
+                                          padding: const EdgeInsets.fromLTRB(
+                                              16, 8, 16, 100),
+                                          gridDelegate:
+                                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 2,
+                                            mainAxisSpacing: 14,
+                                            crossAxisSpacing: 14,
+                                            mainAxisExtent: 310,
+                                          ),
+                                          itemCount:
+                                              _filteredProducts.length,
+                                          itemBuilder: (context, index) {
+                                            return ProductCard(
+                                              product:
+                                                  _filteredProducts[index],
+                                            );
                                           },
                                         ),
                                       ),
-                                    )
-                                  : ProductSearchGrid(
-                                      products: _filteredProducts),
-                            ),
-                          ],
-                        ),
-            ),
-          ],
-        ),
+                                    ],
+                                  ),
+                          ),
+                        ],
+                      ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildFilterPanel() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _categories.length + 2,
-        itemBuilder: (context, index) {
-          if (index == 0) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          Builder(builder: (context) {
             final isActive = _minPrice != null ||
                 _maxPrice != null ||
                 _fastShippingOnly ||
@@ -422,46 +426,48 @@ class _SearchScreenState extends State<SearchScreen> {
               padding: const EdgeInsets.only(right: 8.0),
               child: IconButton(
                 onPressed: _showAdvancedFilter,
-                icon: Icon(Icons.tune_rounded,
-                    color: isActive ? Colors.white : AppColors.ink,
-                    size: 20),
+                icon: Icon(
+                  Icons.tune_rounded,
+                  color: isActive ? Colors.white : AppColors.ink,
+                  size: 20,
+                ),
                 style: IconButton.styleFrom(
-                  backgroundColor: isActive ? AppColors.green : AppColors.bg,
+                  backgroundColor:
+                      isActive ? AppColors.green : AppColors.bg,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(
-                        color:
-                            isActive ? AppColors.green : AppColors.line),
+                      color: isActive ? AppColors.green : AppColors.line,
+                    ),
                   ),
                 ),
               ),
             );
-          }
-          if (index == 1) {
+          }),
+          FilterChipWidget(
+            label: "Semua",
+            isSelected: _selectedCategory == null,
+            onTap: () {
+              _selectedCategory = null;
+              _applyFiltersAndSort();
+            },
+          ),
+          ..._categories.map((cat) {
+            final formattedCat = cat
+                .split('-')
+                .map((w) =>
+                    w.isNotEmpty ? w[0].toUpperCase() + w.substring(1) : w)
+                .join(' ');
             return FilterChipWidget(
-              label: "Semua",
-              isSelected: _selectedCategory == null,
+              label: formattedCat,
+              isSelected: _selectedCategory == cat,
               onTap: () {
-                _selectedCategory = null;
+                _selectedCategory = cat;
                 _applyFiltersAndSort();
               },
             );
-          }
-          final cat = _categories[index - 2];
-          final formattedCat = cat
-              .split('-')
-              .map((w) =>
-                  w.isNotEmpty ? w[0].toUpperCase() + w.substring(1) : w)
-              .join(' ');
-          return FilterChipWidget(
-            label: formattedCat,
-            isSelected: _selectedCategory == cat,
-            onTap: () {
-              _selectedCategory = cat;
-              _applyFiltersAndSort();
-            },
-          );
-        },
+          }),
+        ],
       ),
     );
   }
