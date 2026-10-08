@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'services/auth_store.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,7 +15,7 @@ class _LoginPageState extends State<LoginPage> {
 
   bool passwordVisible = false;
 
-  void login() {
+  Future<void> login() async {
     if (emailController.text.isEmpty ||
         passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -24,7 +26,20 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    Navigator.pushNamed(context, '/profile');
+    final berhasil = await AuthStore.instance.login(
+      emailController.text,
+      passwordController.text,
+    );
+
+    if (berhasil) {
+      context.go('/home');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email atau password salah'),
+        ),
+      );
+    }
   }
 
   @override
@@ -121,7 +136,7 @@ class _LoginPageState extends State<LoginPage> {
               child: ElevatedButton(
                 onPressed: login,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: const Color.fromARGB(255, 0, 0, 0),
                 ),
                 child: const Text(
                   'Login',
@@ -140,12 +155,12 @@ class _LoginPageState extends State<LoginPage> {
                 const Text('Belum punya akun? '),
                 TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/signup');
+                    context.go('/signup');
                   },
                   child: const Text(
                     'Daftar',
                     style: TextStyle(
-                      color: Colors.green,
+                      color: Color.fromARGB(255, 0, 0, 0),
                     ),
                   ),
                 ),

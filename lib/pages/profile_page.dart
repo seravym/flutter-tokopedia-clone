@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final nama =
+        GoRouterState.of(context).uri.queryParameters['nama'] ??
+        'Nama Pengguna';
+
+    final email =
+        GoRouterState.of(context).uri.queryParameters['email'] ??
+        'user@email.com';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profil Saya'),
-        backgroundColor: const Color(0xFF42B549),
+        backgroundColor: const Color.fromARGB(255, 32, 48, 33),
         foregroundColor: Colors.white,
       ),
       body: Column(
@@ -17,7 +26,7 @@ class ProfilePage extends StatelessWidget {
 
           const CircleAvatar(
             radius: 50,
-            backgroundColor: Color(0xFF42B549),
+            backgroundColor: Color.fromARGB(255, 0, 0, 0),
             child: Icon(
               Icons.person,
               size: 60,
@@ -27,17 +36,17 @@ class ProfilePage extends StatelessWidget {
 
           const SizedBox(height: 15),
 
-          const Text(
-            'Nama Pengguna',
-            style: TextStyle(
+          Text(
+            nama,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
 
-          const Text(
-            'user@email.com',
-            style: TextStyle(
+          Text(
+            email,
+            style: const TextStyle(
               color: Colors.grey,
             ),
           ),
@@ -71,11 +80,7 @@ class ProfilePage extends StatelessWidget {
             leading: const Icon(Icons.logout),
             title: const Text('Keluar'),
             onTap: () {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/login',
-                (route) => false,
-              );
+              context.go('/login');
             },
           ),
         ],
