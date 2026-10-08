@@ -35,7 +35,7 @@ class _WishlistPageState extends State<WishlistPage> {
               if (WishlistStore.instance.count == 0) return const SizedBox.shrink();
               return TextButton(
                 onPressed: () => _confirmClearAll(context),
-                child: Text('Ubah', style: T.s(14, w: FontWeight.w700, c: AppColors.peach)),
+                child: Text('Ubah', style: T.s(14, w: FontWeight.w700, c: AppColors.green)),
               );
             },
           ),
@@ -65,12 +65,12 @@ class _WishlistPageState extends State<WishlistPage> {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: isSelected ? Colors.white : AppColors.bg,
-                        border: Border.all(color: isSelected ? AppColors.peach : AppColors.line),
+                        border: Border.all(color: isSelected ? AppColors.green : AppColors.line),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         _tabs[index],
-                        style: T.s(13, w: isSelected ? FontWeight.w700 : FontWeight.w600, c: isSelected ? AppColors.peach : AppColors.ink),
+                        style: T.s(13, w: isSelected ? FontWeight.w700 : FontWeight.w600, c: isSelected ? AppColors.green : AppColors.ink),
                       ),
                     ),
                   );
@@ -134,7 +134,7 @@ class _WishlistPageState extends State<WishlistPage> {
               WishlistStore.instance.clearAll();
               Navigator.pop(ctx);
             },
-            child: Text('Hapus', style: T.s(14, w: FontWeight.w800, c: AppColors.peach)),
+            child: Text('Hapus', style: T.s(14, w: FontWeight.w800, c: AppColors.green)),
           ),
         ],
       ),
@@ -173,7 +173,7 @@ class _WishlistCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                         decoration: const BoxDecoration(
-                          color: AppColors.peach,
+                          color: AppColors.green,
                           borderRadius: BorderRadius.only(bottomLeft: Radius.circular(8)),
                         ),
                         child: Text('-${p.discountPercentage.round()}%', style: T.s(11, w: FontWeight.w800, c: Colors.white)),
@@ -189,7 +189,7 @@ class _WishlistCard extends StatelessWidget {
                 children: [
                   Text(p.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: T.s(13, w: FontWeight.w600, h: 1.2)),
                   const SizedBox(height: 6),
-                  Text(rupiahInt(p.finalIdr), style: T.s(15, w: FontWeight.w800, c: AppColors.peach)),
+                  Text(rupiahInt(p.finalIdr), style: T.s(15, w: FontWeight.w800, c: AppColors.green)),
                   const SizedBox(height: 4),
                   Row(
                     children: [
@@ -217,10 +217,10 @@ class _WishlistCard extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            border: Border.all(color: AppColors.peach),
+                            border: Border.all(color: AppColors.green),
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Icon(Icons.shopping_cart_outlined, size: 16, color: AppColors.peach),
+                          child: const Icon(Icons.shopping_cart_outlined, size: 16, color: AppColors.green),
                         ),
                       )
                     ],
