@@ -30,7 +30,7 @@ class TrackingOrderPage extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: Colors.grey.shade200),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,7 +153,7 @@ class TrackingOrderPage extends StatelessWidget {
                 color: active ? AppColors.accent : AppColors.surface,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: active ? AppColors.accent : AppColors.border,
+                  color: active ? AppColors.accent : Colors.grey.shade200,
                 ),
               ),
               child: Icon(
@@ -166,7 +166,7 @@ class TrackingOrderPage extends StatelessWidget {
               Container(
                 width: 2,
                 height: 55,
-                color: active ? AppColors.accent : AppColors.border,
+                color: active ? AppColors.accent : Colors.grey.shade200,
               ),
           ],
         ),
