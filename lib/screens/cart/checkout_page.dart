@@ -7,6 +7,7 @@ import '../../services/auth_store.dart';
 import '../../services/cart_store.dart';
 import '../../services/order_store.dart';
 import '../../widgets/common.dart';
+import '../../widgets/confetti_burst.dart';
 
 const _payments = [
   ['Transfer Bank', 'BCA, Mandiri, BNI, BRI', 'account_balance'],
@@ -382,6 +383,14 @@ class _OrderSuccessPageState extends State<OrderSuccessPage>
     vsync: this,
     duration: const Duration(milliseconds: 700),
   )..forward();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ConfettiBurst.show(context);
+    });
+  }
 
   @override
   void dispose() {
